@@ -21,7 +21,7 @@
 
         <!-- 🧾 Notification dropdown -->
         <div v-if="showDropdown"
-             class="absolute right-0 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
+             class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
           <div v-if="notifications.length" class="divide-y divide-gray-100">
             <div v-for="(n, i) in notifications.slice(0, 5)" :key="i" class="p-3 text-sm">
               <div :class="notificationClass(n.type)">
