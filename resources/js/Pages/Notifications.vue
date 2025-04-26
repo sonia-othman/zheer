@@ -26,6 +26,7 @@ const notifications = ref([...props.initialNotifications])
 onMounted(() => {
   window.Echo.channel('sensor-notifications')
     .listen('.SensorAlert', (e) => {
+      console.log("Sensor alert received:", e.alert); // Log the received alert
       notifications.value.unshift(e.alert)
     })
 })

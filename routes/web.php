@@ -43,19 +43,8 @@ Route::get('/', function () {
 // Data API Routes (Web-accessible but could also be in api.php)
 Route::prefix('data')->group(function () {
     // Get sensor data (for charts)
-    Route::get('/sensor', function (Request $request) {
-        $request->validate([
-            'device_id' => 'sometimes|string'
-        ]);
-
-        $query = SensorData::query()->latest();
-        
-        if ($request->has('device_id')) {
-            $query->where('device_id', $request->input('device_id'));
-        }
-        
-        return $query->take(30)->get();
-    });
+    
+    Route::get('/sensor', [DashboardController::class, 'getSensorData']);
 
     // Post new sensor data (triggers real-time updates)
     Route::post('/sensor', [SensorDataController::class, 'store'])
@@ -63,6 +52,7 @@ Route::prefix('data')->group(function () {
     
     // Get statistics
     Route::get('/statistics', [DashboardController::class, 'getStatistics']);
+
 
 });
 
