@@ -46,4 +46,5 @@ class DashboardController extends Controller
             'devicesData' => $deviceData,
         ]);
     }
+    
 }
