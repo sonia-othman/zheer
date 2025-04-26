@@ -46,5 +46,28 @@ class DashboardController extends Controller
             'devicesData' => $deviceData,
         ]);
     }
+    public function getSensorData(Request $request)
+{
+    $deviceId = $request->query('device_id');
+    $filter = $request->query('filter'); // daily, weekly, monthly
+
+    $query = SensorData::query();
+
+    if ($deviceId) {
+        $query->where('device_id', $deviceId);
+    }
+
+    // Always get data from 17th April (or earlier if you want)
+    $startDate = '2024-04-17 00:00:00';
+    $query->where('created_at', '>=', $startDate);
+
+    // Sort by date
+    $sensorData = $query->orderBy('created_at')->get([
+        'device_id', 'temperature', 'battery', 'count', 'created_at'
+    ]);
+
+    return response()->json($sensorData);
+}
+
     
 }
