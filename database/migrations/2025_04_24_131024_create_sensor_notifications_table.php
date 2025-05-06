@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sensor_notifications', function (Blueprint $table) {
             $table->id();
             $table->string('device_id');
-            $table->string('type'); // success, warning, danger
+            $table->string('type'); 
             $table->string('message');
             $table->timestamp('timestamp');
             $table->timestamps();

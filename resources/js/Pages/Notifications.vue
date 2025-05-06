@@ -7,20 +7,20 @@
             <h2 class="text-xl font-semibold mb-4">Recent Notifications</h2>
             <div class="space-y-3">
               <div
-                v-for="(n, i) in notifications"
-                :key="i"
-                :class="notificationClass(n.type)"
+                v-for="notification in notifications"
+                :key="notification.id"
+                :class="notificationClass(notification.type)"
                 class="p-4 rounded-lg shadow-sm"
               >
                 <div class="flex justify-between items-start">
                   <div>
-                    <span class="font-medium">{{ n.message }}</span>
+                    <span class="font-medium">{{ notification.message }}</span>
                     <div class="text-xs mt-1">
-                      Device: {{ n.device_id || 'Unknown' }}
+                      Device: {{ notification.device_id || 'Unknown' }}
                     </div>
                   </div>
                   <div class="text-xs text-gray-500 whitespace-nowrap ml-2">
-                    {{ formatTime(n.timestamp) }}
+                    {{ formatTime(notification.timestamp) }}
                   </div>
                 </div>
               </div>
@@ -33,43 +33,47 @@
 </template>
 
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue'
-import { ref, onMounted } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { ref } from 'vue';
 
 const props = defineProps({
-  initialNotifications: Array
-})
-
-const notifications = ref([...props.initialNotifications].map(n => ({
-  ...n,
-  timestamp: new Date(n.timestamp).toLocaleString()
-})))
-
-function formatTime(timestamp) {
-  return new Date(timestamp).toLocaleTimeString()
-}
-
-onMounted(() => {
-  window.Echo.channel('sensor-notifications')
-    .listen('.SensorAlert', (e) => {
-      const alert = {
-        device_id: e.alert.device_id || 'Unknown',
-        type: e.alert.type,
-        message: e.alert.message,
-        timestamp: e.alert.timestamp ? new Date(e.alert.timestamp).toLocaleString() : new Date().toLocaleString()
-      };
-      
-      notifications.value.unshift(alert);
-    });
+  initialNotifications: {
+    type: Array,
+    default: () => []
+  }
 });
 
-function notificationClass(type) {
-  const base = 'border-l-4 pl-3'
-  return {
-    [base + ' border-green-500 bg-green-50']: type === 'success',
-    [base + ' border-blue-500 bg-blue-50']: type === 'info',
-    [base + ' border-yellow-500 bg-yellow-50']: type === 'warning',
-    [base + ' border-red-500 bg-red-50']: type === 'danger',
+const notifications = ref(props.initialNotifications);
+
+const formatTime = (timestamp) => {
+  return new Date(timestamp).toLocaleTimeString();
+};
+
+const notificationClass = (type) => {
+  const base = 'border-l-4 pl-3';
+  switch(type) {
+    case 'success':
+      return `${base} border-green-500 bg-green-50`;
+    case 'info':
+      return `${base} border-blue-500 bg-blue-50`;
+    case 'warning':
+      return `${base} border-yellow-500 bg-yellow-50`;
+    case 'danger':
+      return `${base} border-red-500 bg-red-50`;
+    default:
+      return `${base} border-gray-500 bg-gray-50`;
   }
-}
+};
+
+// Real-time updates
+window.Echo.channel('sensor-notifications')
+  .listen('.SensorAlert', (e) => {
+    notifications.value.unshift({
+      id: Date.now(), // temporary ID for new notifications
+      device_id: e.alert.device_id || 'Unknown',
+      type: e.alert.type,
+      message: e.alert.message,
+      timestamp: e.alert.timestamp || new Date().toISOString()
+    });
+  });
 </script>

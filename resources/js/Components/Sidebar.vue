@@ -37,15 +37,7 @@
         <span class="font-semibold">زمان</span>
       </Link>
 
-      <!-- Profile Link -->
-      <Link 
-        :href="route('profile.edit')" 
-        class="nav-link" 
-        :class="{ 'active': $page.component === 'Profile/Edit' }"
-      >
-        <UserIcon class="w-6 h-6" />
-        <span class="font-bold">پڕۆفایل</span>
-      </Link>
+
     </nav>
   </div>
 </template>

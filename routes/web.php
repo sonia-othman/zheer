@@ -1,83 +1,59 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SensorDataController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\SensorData;
 use Illuminate\Http\Request;
-use App\Models\SensorNotification;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-// Public Routes
 Route::get('/', function () {
-    $stats = [
-        'devices' => SensorData::distinct('device_id')->count('device_id'),
-        'alerts' => SensorData::where('status', true)
-            ->where('created_at', '>', now()->subDay())
-            ->count(),
-        'latest' => SensorData::latest()->first()
-    ];
-
     return Inertia::render('Home', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'initialStats' => $stats
+        'initialStats' => [
+            'devices' => SensorData::distinct('device_id')->count('device_id'),
+            'alerts' => SensorData::where('status', true)
+                ->where('created_at', '>', now()->subDay())
+                ->count(),
+            'devicesData' => SensorData::latest()
+                ->get()
+                ->unique('device_id')
+                ->map(fn($record) => [
+                    'device_id' => $record->device_id,
+                    'status' => $record->status,
+                    'temperature' => $record->temperature,
+                    'battery' => $record->battery,
+                    'count' => $record->count,
+                    'created_at' => $record->created_at,
+                ])
+                ->values()
+        ]
     ]);
 })->name('home');
 
-// Data API Routes (Web-accessible but could also be in api.php)
 Route::prefix('data')->group(function () {
-    // Get sensor data (for charts)
-    
     Route::get('/sensor', [DashboardController::class, 'getSensorData']);
-
-    // Post new sensor data (triggers real-time updates)
-    Route::post('/sensor', [SensorDataController::class, 'store'])
-        ->name('sensor-data.store');
-    
-    // Get statistics
+    Route::post('/sensor', [SensorDataController::class, 'store']);
     Route::get('/statistics', [DashboardController::class, 'getStatistics']);
-
-
 });
 
-// Authenticated Routes
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function (Request $request) {
-        return Inertia::render('Dashboard', [
-            'initialDeviceId' => $request->query('device_id')
-        ]);
-        
-    })->name('dashboard');
+Route::get('/dashboard', function (Request $request) {
+    return Inertia::render('Dashboard', [
+        'initialDeviceId' => $request->query('device_id'),
+        'initialData' => app(DashboardController::class)->getDashboardData($request)
+    ]);
+})->name('dashboard');
 
-    Route::get('/notifications', function () {
-        $notifications = SensorNotification::latest()->take(100)->get();
-        return Inertia::render('Notifications', [
-            'initialNotifications' => $notifications,
-        ]);
-    })->name('notifications');
-});
-
-// Profile Routes
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
+Route::get('/notifications', function () {
+    return Inertia::render('Notifications', [
+        'initialNotifications' => \App\Models\SensorNotification::latest()
+            ->take(100)
+            ->get()
+            ->map(fn($n) => [
+                'id' => $n->id,
+                'device_id' => $n->device_id,
+                'type' => $n->type,
+                'message' => $n->message,
+                'timestamp' => $n->created_at
+            ])
+    ]);
+})->name('notifications');
