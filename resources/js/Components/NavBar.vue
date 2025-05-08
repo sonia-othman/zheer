@@ -1,11 +1,15 @@
 <template>
   <nav class="bg-white border-b px-6 py-4 flex justify-between items-center relative">
-    <!-- Left side: User & Notifications -->
+    <!-- Left side: Empty or could contain logo/navigation -->
     <div class="flex items-center gap-6">
-      <div class="flex items-center gap-2 text-gray-700 font-medium">
-        <!-- User Icon from Heroicons -->
-        <UserIcon class="w-6 h-6 text-gray-600" />
-        <span>{{ user?.name ?? 'Guest' }}</span>
+      <!-- Any other left-side content -->
+    </div>
+
+    <!-- Right side: Title and Notifications -->
+    <div class="flex items-center gap-6">
+      <!-- Dynamic Title -->
+      <div class="text-xl font-bold text-gray-800">
+        {{ currentPage }}
       </div>
 
       <!-- Notifications -->
@@ -21,7 +25,7 @@
 
         <!-- 🧾 Notification dropdown -->
         <div v-if="showDropdown"
-             class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
+             class="absolute right-0 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
           <div v-if="notifications.length" class="divide-y divide-gray-100">
             <div v-for="(n, i) in notifications.slice(0, 5)" :key="i" class="p-3 text-sm">
               <div :class="notificationClass(n.type)">
@@ -38,11 +42,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 📛 Right side: Dynamic Title -->
-    <div class="text-xl font-bold text-gray-800">
-      {{ currentPage }}
     </div>
   </nav>
 </template>
@@ -71,6 +70,7 @@ function notificationClass(type) {
     'text-green-600': type === 'success',
     'text-yellow-600': type === 'warning',
     'text-red-600': type === 'danger',
+    'text-blue-600': type === 'info',
   }
 }
 
@@ -93,9 +93,9 @@ onMounted(() => {
 
 // 🔠 Dynamic page title from current route
 const routeMap = {
-  '/dashboard': 'Dashboard',
-  '/notifications': 'Notifications'
+  '/dashboard': 'داشبۆرد',
+  '/notifications': 'ئاگاداریەکان'
 }
-const currentPage = computed(() => routeMap[window.location.pathname] || 'IoT Platform')
+const currentPage = computed(() => routeMap[window.location.pathname] || 'سەرەکی')
 
 </script>

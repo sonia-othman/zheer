@@ -206,7 +206,7 @@ const updateCountChart = (data, filterType) => {
         idx === minCountIndex ? '#2781F2' : '#23538F'),
       borderColor: countData.map((_, idx) => 
         idx === maxCountIndex ? '#2A55A2' : 
-        idx === minCountIndex ? '#2781F2' : '#7c3aed'),
+        idx === minCountIndex ? '#2781F2' : '#23538F'),
       borderWidth: 1,
     }]
   };
@@ -224,8 +224,8 @@ const updateCountChart = (data, filterType) => {
                     filterType === 'monthly' ? `Date: ${context[0].label}` : `Time: ${context[0].label}`,
               afterBody: context => {
                 const index = context[0].dataIndex;
-                return index === maxCountIndex ? ['🚀 Highest Activity'] : 
-                       index === minCountIndex ? ['🐢 Lowest Activity'] : [];
+                return index === maxCountIndex ? ['🚀 کۆتا چالاکی'] : 
+                       index === minCountIndex ? ['🐢 یەکەم چالاکی '] : [];
               }
             }
           }
@@ -328,13 +328,13 @@ onUnmounted(() => {
       </h2>
     </template>
 
-    <div class="py-6">
+    <div class="py-6" dir="rtl">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">Current Status</h3>
+            <h3 class="text-lg font-medium text-gray-900">دۆخی ئێستا</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">Door/Window</p>
+              <p class="text-sm text-gray-500">دەرگا & پەنجەرە</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.status ? 'Open' : 'Closed' }}
               </p>
@@ -342,9 +342,9 @@ onUnmounted(() => {
           </div>
 
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">Temperature</h3>
+            <h3 class="text-lg font-medium text-gray-900">پلەی گەرمی</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">Current</p>
+              <p class="text-sm text-gray-500">ئێستا</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.temperature ?? '--' }}°C
               </p>
@@ -352,9 +352,9 @@ onUnmounted(() => {
           </div>
 
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">Battery</h3>
+            <h3 class="text-lg font-medium text-gray-900">پاتری</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">Voltage</p>
+              <p class="text-sm text-gray-500">ڤۆلتاج</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.battery ?? '--' }}V
               </p>
@@ -362,9 +362,9 @@ onUnmounted(() => {
           </div>
 
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">Open Count</h3>
+            <h3 class="text-lg font-medium text-gray-900">ژمارەی کرانەوەکان</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">Today/Period</p>
+              <p class="text-sm text-gray-500">ئێستا</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.count ?? '0' }}
               </p>
@@ -374,39 +374,39 @@ onUnmounted(() => {
 
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Temperature & Battery</h3>
+            <h3 class="text-lg font-medium text-gray-900">پلەی گەرمی و پاتری</h3>
             <select v-model="tempBatteryFilter" class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm">
-              <option value="daily">Today</option>
-              <option value="weekly">This Week</option>
-              <option value="monthly">This Month</option>
+              <option value="daily">ئەمڕۆ</option>
+              <option value="weekly">هەفتانە</option>
+              <option value="monthly">مانگانە</option>
             </select>
           </div>
           <canvas ref="chartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500">
-            <span class="inline-block w-3 h-3 bg-black rounded-full mr-1"></span> Highest/Lowest points
+            <span class="inline-block w-3 h-3 bg-black rounded-full mr-1"></span> بەرزترین و نزمترین خاڵ
           </div>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Door/Window Openings</h3>
+            <h3 class="text-lg font-medium text-gray-900">کرانەوەکان</h3>
             <select v-model="countFilter" class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm">
-              <option value="daily">Today</option>
-              <option value="weekly">This Week</option>
-              <option value="monthly">This Month</option>
+              <option value="daily">ئەمڕۆ</option>
+              <option value="weekly">هەفتانە</option>
+              <option value="monthly">مانگانە</option>
             </select>
           </div>
           <div class="flex justify-between items-center mb-2">
-            <p class="text-sm text-gray-500">Total Opens: {{ latestData?.count ?? '0' }}</p>
-            <p class="text-sm text-gray-500">Last at: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
+            <p class="text-sm text-gray-500">کۆی کرانەوەکان: {{ latestData?.count ?? '0' }}</p>
+            <p class="text-sm text-gray-500">کۆتا نوێبونەوە: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
           </div>
           <canvas ref="countChartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500 flex items-center">
             <span class="inline-flex items-center mr-3">
-              <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> Highest activity
+              <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> بەرزترین چالاکی
             </span>
             <span class="inline-flex items-center">
-              <span class="inline-block w-3 h-3 bg-blue-900 rounded-full mr-1"></span> Lowest activity
+              <span class="inline-block w-3 h-3 bg-blue-900 rounded-full mr-1"></span> نزمترین چالاکی 
             </span>
           </div>
         </div>

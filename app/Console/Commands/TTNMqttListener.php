@@ -8,14 +8,16 @@ use PhpMqtt\Client\ConnectionSettings;
 use App\Models\SensorData;
 use PhpMqtt\Client\Protocol\MqttVersion;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class TTNMqttListener extends Command
 {
     protected $signature = 'mqtt:listen';
     protected $description = 'Listen to TTN MQTT messages';
 
-    // 🧫 Track open time
-    protected $doorOpenTimes = []; // [device_id => opened_at]
+    // Simple state tracking
+    protected $openDoors = []; // [device_id => opened_timestamp]
+    protected $doorOpenAlertSent = []; // [device_id => true/false]
 
     public function handle()
     {
@@ -50,10 +52,18 @@ class TTNMqttListener extends Command
             }, 0);
 
             $mqtt->registerLoopEventHandler(function (MqttClient $mqtt) {
-                static $last = 0;
-                if (time() - $last > 10) {
+                // Simple heartbeat
+                static $lastHeartbeat = 0;
+                if (time() - $lastHeartbeat > 10) {
                     $this->info("🐧 Connection alive");
-                    $last = time();
+                    $lastHeartbeat = time();
+                }
+                
+                // Check doors every 20 seconds
+                static $lastDoorCheck = 0;
+                if (time() - $lastDoorCheck > 20) {
+                    $this->checkDoorsOpenTooLong();
+                    $lastDoorCheck = time();
                 }
             });
 
@@ -65,17 +75,69 @@ class TTNMqttListener extends Command
             Log::error("MQTT Listener Failed", ['error' => $e]);
         }
     }
+    
+    protected function checkDoorsOpenTooLong()
+    {
+        $now = Carbon::now();
+        $this->info("🔍 Checking doors at " . $now->toDateTimeString());
+        
+        foreach ($this->openDoors as $deviceId => $openTime) {
+            // Ensure openTime is a Carbon instance
+            if (!($openTime instanceof Carbon)) {
+                $openTime = Carbon::parse($openTime);
+                $this->openDoors[$deviceId] = $openTime; // Update with Carbon object
+            }
+            
+            // Calculate minutes open - always positive by using proper Carbon methods
+            $minutesOpen = $openTime->diffInMinutes($now);
+            $this->info("📊 Door {$deviceId} has been open for {$minutesOpen} minutes");
+            
+            // Check if open for 1+ minute AND alert not sent yet
+            if ($minutesOpen >= 1 && empty($this->doorOpenAlertSent[$deviceId])) {
+                $this->info("🚨 ALERT: Door {$deviceId} open for {$minutesOpen} minutes!");
+                
+                $alertData = [
+                    'device_id' => $deviceId,
+                    'type' => 'danger',
+                    'message' => "زیاتر لە یەک خولەکە دەرگاکە کراوەیە ⚠️",
+                    'timestamp' => $now
+                ];
+                
+                // Save to database
+                \App\Models\SensorNotification::create([
+                    'device_id' => $alertData['device_id'],
+                    'type' => $alertData['type'],
+                    'message' => $alertData['message'],
+                    'timestamp' => $now
+                ]);
+                
+                // Broadcast event
+                event(new \App\Events\SensorAlert([
+                    'device_id' => $alertData['device_id'],
+                    'type' => $alertData['type'],
+                    'message' => $alertData['message'],
+                    'timestamp' => $now->toDateTimeString()
+                ]));
+                
+                // Mark alert as sent to avoid duplicates
+                $this->doorOpenAlertSent[$deviceId] = true;
+            }
+        }
+    }
+
     protected function processPayload(array $payload)
     {
         try {
             $deviceId = $payload['end_device_ids']['device_id'] ?? 'unknown';
             $decoded = $payload['uplink_message']['decoded_payload'] ?? [];
+            $this->info("📦 Processing data for device: $deviceId");
     
             $status = isset($decoded['status']) ? (bool)$decoded['status'] : false;
             $temperature = $decoded['temperatureBoard'] ?? null;
             $count = $decoded['count'] ?? null;
             $battery = $decoded['battery'] ?? null;
     
+            // Save data to database
             $sensorData = SensorData::create([
                 'device_id' => $deviceId,
                 'status' => $status,
@@ -85,36 +147,64 @@ class TTNMqttListener extends Command
                 'raw_payload' => $payload,
             ]);
     
-            // 🔥 FIRE SensorDataUpdated here!
+            // Broadcast sensor data update
             event(new \App\Events\SensorDataUpdated($sensorData));
     
-            // Notifications logic for alert page (optional)
+            // Prepare notifications
             $messages = [];
-            $now = now();
+            $now = Carbon::now();
     
-            if ($status) {
-                // door open more than 5 minutes
-            } else {
-                $messages[] = ['type' => 'success', 'message' => '✅ Door closed'];
-            }
-    
-            if (!is_null($temperature)) {
-                if ($temperature > 35) {
-                    $messages[] = ['type' => 'danger', 'message' => "🔥 High temperature: {$temperature}°C"];
-                } elseif ($temperature < 5) {
-                    $messages[] = ['type' => 'danger', 'message' => "❄️ Low temperature: {$temperature}°C"];
+            // Handle door status
+            if ($status) { // TRUE = DOOR OPEN
+                $this->info("🚪 Door $deviceId is OPEN");
+                
+                // If this is a new open event
+                if (!isset($this->openDoors[$deviceId])) {
+                    $this->info("✏️ Recording new open event for door $deviceId");
+                    $messages[] = ['type' => 'info', 'message' => 'دەرگاکە کرایەوە 🚪'];
+                    
+                    // Record when door opened - ensure we store as Carbon instance
+                    $this->openDoors[$deviceId] = Carbon::now();
+                    
+                    // Reset alert status
+                    $this->doorOpenAlertSent[$deviceId] = false;
+                }
+                
+            } else { // FALSE = DOOR CLOSED
+                $this->info("🚪 Door $deviceId is CLOSED");
+                
+                // If we were tracking this door as open
+                if (isset($this->openDoors[$deviceId])) {
+                    $this->info("✏️ Recording door close for $deviceId");
+                    $messages[] = ['type' => 'success', 'message' => 'دەرگاکە داخرا ✅'];
+                    
+                    // Door is now closed, remove from tracking
+                    unset($this->openDoors[$deviceId]);
+                    unset($this->doorOpenAlertSent[$deviceId]);
                 }
             }
     
-            if (is_null($battery)) {
-                $messages[] = ['type' => 'danger', 'message' => "❌ Battery disconnected"];
-            } elseif ($battery < 2.5) {
-                $messages[] = ['type' => 'danger', 'message' => "🔋 Critical battery low: {$battery}V"];
-            } elseif ($battery < 2.9) {
-                $messages[] = ['type' => 'warning', 'message' => "⚠️ Battery low: {$battery}V"];
+            // Temperature checks
+            if (!is_null($temperature)) {
+                if ($temperature > 35) {
+                    $messages[] = ['type' => 'danger', 'message' => " {$temperature}°C پلەی گەرما زۆر بەرزە 🔥"];
+                } elseif ($temperature < 5) {
+                    $messages[] = ['type' => 'danger', 'message' => "  {$temperature}°C پلەی گەرما زۆر نزمە ❄️"];
+                }
             }
     
+            // Battery checks
+            if (is_null($battery)) {
+                $messages[] = ['type' => 'danger', 'message' => "نەمانی پەیوەندی بە سێنسەرەکەوە ❌ "];
+            } elseif ($battery < 2.5) {
+                $messages[] = ['type' => 'danger', 'message' => " {$battery}V ڕێژەی پاتریەکەو نزمە 🔋"];
+            } elseif ($battery < 2.9) {
+                $messages[] = ['type' => 'warning', 'message' => "{$battery}V ڕێژەی پاتریەکەو زۆر نزمە ⚠️"];
+            }
+    
+            // Send all notifications
             foreach ($messages as $msg) {
+                // Save to database
                 \App\Models\SensorNotification::create([
                     'device_id' => $deviceId,
                     'type' => $msg['type'],
@@ -122,6 +212,7 @@ class TTNMqttListener extends Command
                     'timestamp' => $now
                 ]);
     
+                // Broadcast event
                 event(new \App\Events\SensorAlert([
                     'device_id' => $deviceId,
                     'type' => $msg['type'],
@@ -130,7 +221,7 @@ class TTNMqttListener extends Command
                 ]));
             }
     
-            $this->info("✅ Sensor data processed and events broadcasted.");
+            $this->info("✅ Sensor data processed successfully");
     
         } catch (\Exception $e) {
             $this->error("❌ Failed to process payload: " . $e->getMessage());
