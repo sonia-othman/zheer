@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <div class="flex flex-wrap gap-4 justify-end p-4">
+    <div class="flex flex-wrap gap-5 justify-end p-4">
       <Card
         v-for="device in devices"
         :key="device.device_id"

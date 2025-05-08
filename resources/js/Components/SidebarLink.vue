@@ -1,28 +1,41 @@
 <template>
-  <a 
-    :href="href" 
-    class="flex items-center space-x-2 w-full px-4 py-2 rounded transition"
+  <Link 
+    :href="route(href)" 
+    class="flex flex-row-reverse items-center gap-2 px-4 py-2 rounded w-full transition"
     :class="{
-      'bg-primary-default text-white': isActive,
-      'text-primary-light': !isActive,
-      'active:bg-primary-700': !isActive
+      'bg-primary text-white font-bold': isActive,
+      'text-primary-light hover:bg-gray-100': !isActive
     }"
   >
-    <component :is="icon" class="w-6 h-6" :class="{'text-white': isActive, 'text-primary-light': !isActive}" />
-    <span :class="{'text-white': isActive, 'text-primary-light': !isActive}">{{ text }}</span>
-  </a>
+    <component :is="iconComponent" class="w-6 h-6" />
+    <span>{{ text }}</span>
+  </Link>
 </template>
 
 <script setup>
-import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { HomeIcon, BellIcon } from "@heroicons/vue/24/solid";
+import { GlobeAltIcon } from "@heroicons/vue/24/outline";
 
-// Define props
-defineProps(["href", "icon", "text"]);
-
-// Determine if the current page is active by checking the current route
-const { component } = usePage();
-
-const isActive = computed(() => {
-  return component === text || href === window.location.pathname; // Compare with the actual href
+// Props
+const props = defineProps({
+  href: String,
+  icon: String,
+  text: String,
+  match: String
 });
+
+// Map icon names to components
+const iconComponent = computed(() => {
+  return {
+    HomeIcon,
+    BellIcon,
+    GlobeAltIcon
+  }[props.icon];
+});
+
+// Get current component
+const page = usePage();
+const isActive = computed(() => page.component === props.match);
 </script>
