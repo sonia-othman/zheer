@@ -1,0 +1,30 @@
+{
+    "common": {
+        "dashboard": "لوحة التحكم",
+        "home": "الصفحة الرئيسية",
+        "notifications": "الإشعارات",
+        "language": "اللغة",
+        "english": "الإنجليزية",
+        "kurdish": "الكردية",
+        "arabic": "العربية",
+        "open": "مفتوح",
+        "closed": "مغلق",
+        "direction": "rtl"
+    },
+    "dashboard": {
+        "title": "لوحة أجهزة الاستشعار",
+        "current_status": "الحالة الحالية",
+        "temperature": "درجة الحرارة"
+    },
+    "home": {
+        "title": "نظرة عامة على الأجهزة",
+        "device": "جهاز",
+        "temperature_short": "د",
+        "battery_short": "ب",
+        "no_devices": "لا توجد أجهزة متصلة"
+    },
+    "notifications": {
+        "title": "التنبيهات",
+        "no_alerts": "لا توجد تنبيهات حديثة"
+    }
+}

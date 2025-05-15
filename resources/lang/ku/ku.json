@@ -1,0 +1,30 @@
+{
+    "common": {
+        "dashboard": "داشبۆرد",
+        "home": "ماڵەوە",
+        "notifications": "ئاگادارکردنەوەکان",
+        "language": "زمان",
+        "english": "ئینگلیزی",
+        "kurdish": "کوردی",
+        "arabic": "عەرەبی",
+        "direction": "rtl",
+        "open": "کراوە",
+        "closed": "داخراوە"
+    },
+    "dashboard": {
+        "title": "داشبۆردی سێنسەر",
+        "current_status": "دۆخی ئێستا",
+        "temperature": "پلەی گەرمی"
+    },
+    "home": {
+        "title": "پێشبینی ئامێرەکان",
+        "device": "ئامێر",
+        "temperature_short": "پ",
+        "battery_short": "ب",
+        "no_devices": "هیچ ئامێرێک پەیوەندی نەکردووە"
+    },
+    "notifications": {
+        "title": "ئاگاداریەکان",
+        "no_alerts": "هیچ ئاگاداریەکی نوێ نییە"
+    }
+}

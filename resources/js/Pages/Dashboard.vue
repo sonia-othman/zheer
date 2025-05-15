@@ -1,7 +1,6 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 
@@ -11,12 +10,30 @@ const latestData = ref(null);
 
 const props = defineProps({
   initialDeviceId: String,
-  initialData: Object
+  initialData: Object,
+  translations: Object
 });
+
+// Helper to access translations
+const t = (key) => {
+  return props.translations[key] || key;
+};
 
 const deviceId = ref(props.initialDeviceId);
 const tempBatteryFilter = ref('daily');
 const countFilter = ref('daily');
+
+// Filter options with translations
+const filterOptions = computed(() => ({
+  daily: t('Today'),
+  weekly: t('Weekly'),
+  monthly: t('Monthly')
+}));
+
+const statusText = computed(() => ({
+  open: t('Open'),
+  closed: t('Closed')
+}));
 
 let tempBatteryChart = null;
 let countChart = null;
@@ -111,6 +128,7 @@ const updateTempBatteryChart = (data, filterType) => {
   const temperatureData = data.map(entry => entry.temperature);
   const batteryData = data.map(entry => entry.battery);
 
+
   const maxTemp = Math.max(...temperatureData);
   const minTemp = Math.min(...temperatureData);
   const maxTempIndex = temperatureData.indexOf(maxTemp);
@@ -120,12 +138,11 @@ const updateTempBatteryChart = (data, filterType) => {
   const minBattery = Math.min(...batteryData);
   const maxBatteryIndex = batteryData.indexOf(maxBattery);
   const minBatteryIndex = batteryData.indexOf(minBattery);
-
-  const chartData = {
+ const chartData = {
     labels,
     datasets: [
       {
-        label: '🌡 Temperature (°C)',
+        label: `🌡 ${t('Temperature')} (°C)`,
         data: temperatureData,
         borderColor: '#ef4444',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -137,7 +154,7 @@ const updateTempBatteryChart = (data, filterType) => {
           idx === maxTempIndex || idx === minTempIndex ? 6 : 3),
       },
       {
-        label: '🔋 Battery (V)',
+        label: `🔋 ${t('Battery')} (V)`,
         data: batteryData,
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -161,23 +178,37 @@ const updateTempBatteryChart = (data, filterType) => {
         plugins: {
           tooltip: {
             callbacks: {
-              title: context => filterType === 'weekly' ? `Day: ${context[0].label}` : 
-                    filterType === 'monthly' ? `Date: ${context[0].label}` : `Time: ${context[0].label}`,
+              title: context => `${t(filterType === 'weekly' ? 'Day' : filterType === 'monthly' ? 'Date' : 'Time')}: ${context[0].label}`,
               afterBody: context => {
                 const index = context[0].dataIndex;
                 const tooltips = [];
-                if (index === maxTempIndex) tooltips.push('🔥 Highest Temperature');
-                else if (index === minTempIndex) tooltips.push('❄️ Lowest Temperature');
-                if (index === maxBatteryIndex) tooltips.push('⚡ Highest Battery');
-                else if (index === minBatteryIndex) tooltips.push('🪫 Lowest Battery');
+                if (index === maxTempIndex) tooltips.push(t('Highest Temperature'));
+                else if (index === minTempIndex) tooltips.push(t('Lowest Temperature'));
+                if (index === maxBatteryIndex) tooltips.push(t('Highest Battery'));
+                else if (index === minBatteryIndex) tooltips.push(t('Lowest Battery'));
                 return tooltips;
               }
             }
           }
         },
         scales: {
-          y: { type: 'linear', position: 'left', title: { display: true, text: 'Temperature (°C)' } },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Battery (V)' } },
+          y: { 
+            type: 'linear', 
+            position: 'left', 
+            title: { 
+              display: true, 
+              text: `${t('Temperature')} (°C)` 
+            } 
+          },
+          y1: { 
+            type: 'linear', 
+            position: 'right', 
+            grid: { drawOnChartArea: false }, 
+            title: { 
+              display: true, 
+              text: `${t('Battery')} (V)` 
+            } 
+          },
         },
       },
     });
@@ -211,7 +242,7 @@ const updateCountChart = (data, filterType) => {
     }]
   };
 
-  if (!countChart) {
+    if (!countChart) {
     countChart = new Chart(countChartRef.value, {
       type: 'bar',
       data: chartData,
@@ -220,18 +251,24 @@ const updateCountChart = (data, filterType) => {
         plugins: {
           tooltip: {
             callbacks: {
-              title: context => filterType === 'weekly' ? `Day: ${context[0].label}` : 
-                    filterType === 'monthly' ? `Date: ${context[0].label}` : `Time: ${context[0].label}`,
+              title: context => filterType === 'weekly' ? `${t('dashboard.day')}: ${context[0].label}` : 
+                    filterType === 'monthly' ? `${t('dashboard.date')}: ${context[0].label}` : `${t('dashboard.time')}: ${context[0].label}`,
               afterBody: context => {
                 const index = context[0].dataIndex;
-                return index === maxCountIndex ? ['🚀 کۆتا چالاکی'] : 
-                       index === minCountIndex ? ['🐢 یەکەم چالاکی '] : [];
+                return index === maxCountIndex ? [t('dashboard.highest_activity')] : 
+                       index === minCountIndex ? [t('dashboard.lowest_activity')] : [];
               }
             }
           }
         },
         scales: {
-          y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+          y: { 
+            beginAtZero: true, 
+            title: { 
+              display: true, 
+              text: t('dashboard.count') 
+            } 
+          },
         },
       },
     });
@@ -240,6 +277,7 @@ const updateCountChart = (data, filterType) => {
     countChart.update();
   }
 };
+
 
 const fetchData = async (type) => {
   try {
@@ -318,53 +356,57 @@ onUnmounted(() => {
   window.Echo.leaveChannel('sensor-data');
 });
 </script>
-
 <template>
-  <Head title="Dashboard" />
+  <Head :title="t('Dashboard')" />
   <AppLayout>
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Door/Window Sensor Dashboard
+        {{ t('Dashboard') }}
       </h2>
     </template>
 
-    <div class="py-6" dir="rtl">
+    <div class="py-6" :dir="t('direction') === 'rtl' ? 'rtl' : 'ltr'">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <!-- Status Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Current Status -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">دۆخی ئێستا</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Current Status') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">دەرگا & پەنجەرە</p>
+              <p class="text-sm text-gray-500">{{ t('Door & Window') }}</p>
               <p class="text-2xl font-semibold">
-                {{ latestData?.status ? 'Open' : 'Closed' }}
+                {{ latestData?.status ? statusText.open : statusText.closed }}
               </p>
             </div>
           </div>
 
+          <!-- Temperature -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">پلەی گەرمی</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Temperature') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">ئێستا</p>
+              <p class="text-sm text-gray-500">{{ t('Current') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.temperature ?? '--' }}°C
               </p>
             </div>
           </div>
 
+          <!-- Battery -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">پاتری</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Battery') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">ڤۆلتاج</p>
+              <p class="text-sm text-gray-500">{{ t('Voltage') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.battery ?? '--' }}V
               </p>
             </div>
           </div>
 
+          <!-- Open Count -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">ژمارەی کرانەوەکان</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Open Count') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">ئێستا</p>
+              <p class="text-sm text-gray-500">{{ t('Current') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.count ?? '0' }}
               </p>
@@ -372,41 +414,52 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <!-- Temperature & Battery Chart -->
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">پلەی گەرمی و پاتری</h3>
-            <select v-model="tempBatteryFilter" class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm">
-              <option value="daily">ئەمڕۆ</option>
-              <option value="weekly">هەفتانە</option>
-              <option value="monthly">مانگانە</option>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Temperature & Battery') }}</h3>
+            <select 
+              v-model="tempBatteryFilter" 
+              class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm"
+            >
+              <option v-for="(value, key) in filterOptions" :value="key">
+                {{ value }}
+              </option>
             </select>
           </div>
           <canvas ref="chartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500">
-            <span class="inline-block w-3 h-3 bg-black rounded-full mr-1"></span> بەرزترین و نزمترین خاڵ
+            <span class="inline-block w-3 h-3 bg-black rounded-full mr-1"></span> 
+            {{ t('Highest and Lowest Points') }}
           </div>
         </div>
 
+        <!-- Open Count Chart -->
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">کرانەوەکان</h3>
-            <select v-model="countFilter" class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm">
-              <option value="daily">ئەمڕۆ</option>
-              <option value="weekly">هەفتانە</option>
-              <option value="monthly">مانگانە</option>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('Open Count') }}</h3>
+            <select 
+              v-model="countFilter" 
+              class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm"
+            >
+              <option v-for="(value, key) in filterOptions" :value="key">
+                {{ value }}
+              </option>
             </select>
           </div>
           <div class="flex justify-between items-center mb-2">
-            <p class="text-sm text-gray-500">کۆی کرانەوەکان: {{ latestData?.count ?? '0' }}</p>
-            <p class="text-sm text-gray-500">کۆتا نوێبونەوە: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
+            <p class="text-sm text-gray-500">{{ t('Total Opens') }}: {{ latestData?.count ?? '0' }}</p>
+            <p class="text-sm text-gray-500">{{ t('Last Update') }}: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
           </div>
           <canvas ref="countChartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500 flex items-center">
             <span class="inline-flex items-center mr-3">
-              <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> بەرزترین چالاکی
+              <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> 
+              {{ t('Highest Activity') }}
             </span>
             <span class="inline-flex items-center">
-              <span class="inline-block w-3 h-3 bg-blue-900 rounded-full mr-1"></span> نزمترین چالاکی 
+              <span class="inline-block w-3 h-3 bg-blue-900 rounded-full mr-1"></span> 
+              {{ t('Lowest Activity') }}
             </span>
           </div>
         </div>

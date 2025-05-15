@@ -1,0 +1,30 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "home": "Home",
+        "notifications": "Notifications",
+        "language": "Language",
+        "english": "English",
+        "kurdish": "Kurdish",
+        "arabic": "Arabic",
+        "direction": "ltr",
+        "open": "Open",
+        "closed": "Closed"
+    },
+    "dashboard": {
+        "title": "Sensor Dashboard",
+        "current_status": "Current Status",
+        "temperature": "Temperature"
+    },
+    "home": {
+    "title": "Device Overview",
+    "device": "Device",
+    "temperature_short": "T",
+    "battery_short": "B",
+    "no_devices": "No devices connected"
+    },
+    "notifications": {
+        "title": "Alerts",
+        "no_alerts": "No recent alerts"
+    }
+}
