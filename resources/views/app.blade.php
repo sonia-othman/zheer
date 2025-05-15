@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ in_array(app()->getLocale(), ['ar', 'ku']) ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'ku']) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,19 +8,21 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
-    <!-- RTL Styles (loaded conditionally) -->
-    @if(in_array(app()->getLocale(), ['ar', 'ku']))
-        <link rel="stylesheet" href="{{ asset('css/rtl.css') }}">
-    @endif
-
     <!-- Scripts -->
     @routes
-    @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
+    @vite(['resources/js/app.js'])
     @inertiaHead
+    
+    <!-- Manual RTL CSS (optional) -->
+    @if(in_array(app()->getLocale(), ['ar', 'ku']))
+        @vite(['resources/css/rtl.css'])
+    @endif
+    
     <script>
         window.Laravel = {
             locale: "{{ app()->getLocale() }}",
-            fallbackLocale: "{{ config('app.fallback_locale') }}"
+            fallbackLocale: "{{ config('app.fallback_locale') }}",
+            isRtl: {{ in_array(app()->getLocale(), ['ar', 'ku']) ? 'true' : 'false' }}
         };
     </script>
 </head>

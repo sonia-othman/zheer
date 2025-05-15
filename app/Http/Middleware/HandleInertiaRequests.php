@@ -27,40 +27,21 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
-   public function share(Request $request): array
+    public function share(Request $request): array
 {
     return array_merge(parent::share($request), [
-        'translations' => [
-            'common' => __('common'),
-            'dashboard' => __('dashboard'),
-            'home' => __('home'),
-            'notifications' => __('notifications')
+        'locale' => fn () => app()->getLocale(),
+        'direction' => fn () => in_array(app()->getLocale(), ['ar', 'ku']) ? 'rtl' : 'ltr',
+        'translations' => fn () => [
+            'common' => trans('common'),
+            'dashboard' => trans('dashboard'), 
+            'home' => trans('home'),
+            'notifications' => trans('notifications')
         ],
-         'locale' => function () {
-                return app()->getLocale();
-            },
-            'translations' => function () {
-                // Get the current locale
-                $locale = app()->getLocale();
-                
-                // Load all the translation files for the current locale
-                $translations = [];
-                $path = resource_path("lang/{$locale}");
-                
-                if (is_dir($path)) {
-                    $files = scandir($path);
-                    foreach ($files as $file) {
-                        if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
-                            $key = pathinfo($file, PATHINFO_FILENAME);
-                            $translations[$key] = require "{$path}/{$file}";
-                        }
-                    }
-                }
-                
-                return $translations;
-            },
-            'available_locales' => config('app.available_locales', ['en']),
-
+        'flash' => [
+            'success' => fn () => $request->session()->get('success'),
+            'error' => fn () => $request->session()->get('error')
+        ]
     ]);
 }
 }

@@ -1,12 +1,13 @@
 <template>
   <div class="relative">
     <button
-      @click="isOpen = !isOpen"
-      class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+      @click="toggleDropdown"
+      class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800 focus:outline-none"
     >
-      <span>{{ currentLanguageLabel }}</span>
+      <span class="mr-1">{{ currentLanguageLabel }}</span>
       <svg
-        class="ml-1 h-5 w-5 text-gray-400"
+        class="h-5 w-5 text-gray-400 transition-transform duration-200"
+        :class="{ 'transform rotate-180': isOpen }"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -19,33 +20,47 @@
       </svg>
     </button>
 
-    <div
-      v-if="isOpen"
-      class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
+    <transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="transform opacity-0 scale-95"
+      enter-to-class="transform opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="transform opacity-100 scale-100"
+      leave-to-class="transform opacity-0 scale-95"
     >
-      <div class="py-1" role="none">
-        <form @submit.prevent="switchLanguage(language.code)" v-for="language in languages" :key="language.code">
-          <button
-            type="submit"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-            :class="{ 'font-bold': currentLocale === language.code }"
+      <div
+        v-show="isOpen"
+        class="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-50"
+        :class="isRtl ? 'right-0' : 'left-0'"
+        ref="dropdown"
+      >
+        <div class="py-1" role="none">
+          <a
+            v-for="language in languages"
+            :key="language.code"
+            href="#"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            :class="{ 'font-bold bg-gray-50': currentLocale === language.code }"
+            @click="switchLanguage(language.code)"
           >
             {{ language.name }}
-          </button>
-        </form>
+          </a>
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import axios from 'axios';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
 
 const isOpen = ref(false);
+const dropdown = ref(null);
+const page = usePage();
 
-const currentLocale = computed(() => usePage().props.locale || 'en');
+const currentLocale = computed(() => page.props.locale || 'en');
+const isRtl = computed(() => ['ar', 'ku'].includes(currentLocale.value));
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -54,17 +69,44 @@ const languages = [
 ];
 
 const currentLanguageLabel = computed(() => {
-  const lang = languages.find(lang => lang.code === currentLocale.value);
-  return lang ? lang.name : 'English';
+  return languages.find(lang => lang.code === currentLocale.value)?.name || 'English';
 });
 
-const switchLanguage = async (locale) => {
-  try {
-    await axios.post(route('language.switch'), { locale });
-    window.location.reload();
-  } catch (error) {
-    console.error('Error switching language:', error);
-  }
+const toggleDropdown = () => {
+  isOpen.value = !isOpen.value;
+};
+
+const closeDropdown = () => {
   isOpen.value = false;
+};
+
+const handleClickOutside = (event) => {
+  if (dropdown.value && !dropdown.value.contains(event.target)) {
+    closeDropdown();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
+const switchLanguage = async (lang) => {
+  closeDropdown();
+  try {
+    await router.get(route('language.switch', lang), {}, {
+      preserveScroll: true,
+      onSuccess: () => {
+        if (isRtl.value !== ['ar', 'ku'].includes(lang)) {
+          window.location.reload();
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Language switch failed:', error);
+  }
 };
 </script>
