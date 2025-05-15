@@ -24,23 +24,62 @@
       />
 
       <!-- Language Switcher -->
-       <div class="flex flex-row-reverse items-center gap-2 px-4 py-2">
+      <div class="flex flex-row-reverse items-center gap-2 px-4 py-2">
         <GlobeAltIcon class="w-6 h-6 text-primary-light" />
         <select 
-          @change="switchLanguage($event)" 
+          v-model="currentLocale"
+          @change="switchLanguage" 
           class="w-full text-right bg-transparent border-none focus:ring-0"
         >
-          <option value="ku" {{ app()->getLocale() === 'ku' ? 'selected' : '' }}>کوردی</option>
-          <option value="ar" {{ app()->getLocale() === 'ar' ? 'selected' : '' }}>عربی</option>
-          <option value="en" {{ app()->getLocale() === 'en' ? 'selected' : '' }}>English</option>
+          <option value="ku">کوردی</option>
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
         </select>
       </div>
-   </nav>
+    </nav>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { router } from '@inertiajs/vue3';
 import SidebarLink from './SidebarLink.vue';
-const { t } = useI18n();
+import { GlobeAltIcon } from '@heroicons/vue/24/outline'; // Make sure to import this
+
+const { t, locale } = useI18n();
+
+// Initialize with the current locale
+const currentLocale = ref(locale.value);
+
+// Switch language function
+const switchLanguage = () => {
+  // Update locale in Vue I18n
+  locale.value = currentLocale.value;
+  
+  // Change HTML direction based on the selected language
+  const isRtl = ['ar', 'ku'].includes(currentLocale.value);
+  document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+  document.documentElement.lang = currentLocale.value;
+  
+  // Send request to server to update the locale in session
+  router.get(route('language.switch', currentLocale.value), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      // You could add a notification here if you want
+    }
+  });
+};
+
+// Ensure the current locale is set correctly on mount
+onMounted(() => {
+  // Get locale from document or default
+  currentLocale.value = document.documentElement.lang || 'en';
+  
+  // Set RTL direction if needed
+  if (['ar', 'ku'].includes(currentLocale.value)) {
+    document.documentElement.dir = 'rtl';
+  }
+});
 </script>

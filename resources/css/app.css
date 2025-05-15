@@ -3,3 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html[dir="rtl"] {
+  text-align: right;
+}
+
+html[dir="rtl"] .some-class {
+  margin-right: 0;
+  margin-left: 20px;
+}

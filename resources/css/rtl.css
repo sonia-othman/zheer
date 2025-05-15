@@ -1,0 +1,21 @@
+body {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Adjust sidebar positioning */
+.mr-64 {
+    margin-right: 0 !important;
+    margin-left: 16rem !important;
+}
+
+/* Adjust any other directional styles */
+.ml-4 {
+    margin-left: 0 !important;
+    margin-right: 1rem !important;
+}
+
+.pl-4 {
+    padding-left: 0 !important;
+    padding-right: 1rem !important;
+}

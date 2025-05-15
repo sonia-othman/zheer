@@ -36,8 +36,31 @@ class HandleInertiaRequests extends Middleware
             'home' => __('home'),
             'notifications' => __('notifications')
         ],
-        'locale' => app()->getLocale(),
-        'direction' => __('common.direction')
+         'locale' => function () {
+                return app()->getLocale();
+            },
+            'translations' => function () {
+                // Get the current locale
+                $locale = app()->getLocale();
+                
+                // Load all the translation files for the current locale
+                $translations = [];
+                $path = resource_path("lang/{$locale}");
+                
+                if (is_dir($path)) {
+                    $files = scandir($path);
+                    foreach ($files as $file) {
+                        if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                            $key = pathinfo($file, PATHINFO_FILENAME);
+                            $translations[$key] = require "{$path}/{$file}";
+                        }
+                    }
+                }
+                
+                return $translations;
+            },
+            'available_locales' => config('app.available_locales', ['en']),
+
     ]);
 }
 }
