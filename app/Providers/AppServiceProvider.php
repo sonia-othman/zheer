@@ -23,10 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (session()->has('locale')) {
+    if (session()->has('locale')) {
         app()->setLocale(session('locale'));
     }
-        Vite::prefetch(concurrency: 3);
         
     }
 }

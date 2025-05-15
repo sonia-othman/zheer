@@ -60,4 +60,4 @@ Route::get('/dashboard', function (Request $request) {
     ]);
 })->name('dashboard');
 
-Route::get('language/{locale}', [App\Http\Controllers\LanguageController::class, 'switchLang'])->name('language.switch');
+Route::get('language/{locale}', [LanguageController::class, 'switchLang'])->name('language.switch');
