@@ -59,11 +59,5 @@ Route::get('/dashboard', function (Request $request) {
         'translations' => __('dashboard') // Gets all dashboard.* translations
     ]);
 })->name('dashboard');
-
-Route::get('language/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'ku', 'ar'])) {
-        session(['locale' => $locale]);
-        app()->setLocale($locale);
-    }
-    return redirect()->back();
-})->name('language.switch');
+Route::get('/language/{locale}', [App\Http\Controllers\LanguageController::class, 'switchLang'])
+    ->name('language.switch');

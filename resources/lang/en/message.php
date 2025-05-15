@@ -1,3 +1,4 @@
+<?php
 return [
     'welcome' => 'Welcome to our website',
     'about_us' => 'About Us',

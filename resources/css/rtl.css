@@ -1,21 +1,18 @@
-body {
-    text-align: right;
-    direction: rtl;
+/* Basic RTL overrides */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
 }
 
-/* Adjust sidebar positioning */
-.mr-64 {
-    margin-right: 0 !important;
-    margin-left: 16rem !important;
+/* Tailwind-specific RTL fixes */
+[dir="rtl"] .ms-2 {
+  margin-inline-start: 0.5rem !important;
+  margin-left: unset !important;
 }
 
-/* Adjust any other directional styles */
-.ml-4 {
-    margin-left: 0 !important;
-    margin-right: 1rem !important;
+[dir="rtl"] .me-2 {
+  margin-inline-end: 0.5rem !important;
+  margin-right: unset !important;
 }
 
-.pl-4 {
-    padding-left: 0 !important;
-    padding-right: 1rem !important;
-}
+/* Add more RTL overrides as needed */
