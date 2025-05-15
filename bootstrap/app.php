@@ -14,14 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-        ]);
-
-        $middleware->web(append: [
             HandleInertiaRequests::class,
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\SetLocaleMiddleware::class,
         ]);
+        
+        // API middleware group if needed
+        // $middleware->api(append: [
+        //     // Add API specific middleware here
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -1,30 +1,49 @@
 <template>
   <AppLayout>
-    <div class="flex flex-wrap gap-5 justify-end p-4">
+    <Head :title="__('home.title')" />
+    
+    <div class="flex flex-wrap gap-5 justify-end p-4" :dir="$page.props.direction">
       <Card
         v-for="device in devices"
         :key="device.device_id"
         :icon="FireIcon"
-        :title="`Device ${device.device_id}`"
-        :description="device.status ? 'Open' : 'Closed'"
-        :value="`T: ${device.temperature}°C / B: ${device.battery}V`"
+        :title="`${__('home.device')} ${device.device_id}`"
+        :description="device.status ? __('common.open') : __('common.closed')"
+        :value="`${__('home.temperature_short')}: ${device.temperature}°C / ${__('home.battery_short')}: ${device.battery}V`"
         :device-id="device.device_id"
         @click="goToDashboard(device.device_id)"
       />
+      
+      <div v-if="devices.length === 0" class="w-full text-center text-gray-500">
+        {{ __('home.no_devices') }}
+      </div>
     </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'; // Added missing imports
+import { Head } from '@inertiajs/vue3';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Card from "@/Components/Card.vue";
 import { router } from '@inertiajs/vue3';
 import { FireIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
-  initialStats: Object
+  initialStats: Object,
+  translations: Object
 });
+
+// Translation helper
+const __ = (key, replacements = {}) => {
+  let translation = key.split('.').reduce((t, i) => t?.[i], props.translations) || key;
+  
+  Object.keys(replacements).forEach(r => {
+    translation = translation.replace(`:${r}`, replacements[r]);
+  });
+  
+  return translation;
+};
 
 const devices = ref(props.initialStats.devicesData || []);
 

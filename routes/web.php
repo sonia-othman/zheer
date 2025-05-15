@@ -36,12 +36,6 @@ Route::prefix('data')->group(function () {
     Route::get('/statistics', [DashboardController::class, 'getStatistics']);
 });
 
-Route::get('/dashboard', function (Request $request) {
-    return Inertia::render('Dashboard', [
-        'initialDeviceId' => $request->query('device_id'),
-        'initialData' => app(DashboardController::class)->getDashboardData($request)
-    ]);
-})->name('dashboard');
 
 Route::get('/notifications', function () {
     return Inertia::render('Notifications', [
@@ -57,3 +51,13 @@ Route::get('/notifications', function () {
             ])
     ]);
 })->name('notifications');
+
+Route::get('/dashboard', function (Request $request) {
+    return Inertia::render('Dashboard', [
+        'initialDeviceId' => $request->query('device_id'),
+        'initialData' => app(DashboardController::class)->getDashboardData($request),
+        'translations' => __('dashboard') // Gets all dashboard.* translations
+    ]);
+})->name('dashboard');
+
+Route::get('language/{locale}', [App\Http\Controllers\LanguageController::class, 'switchLang'])->name('language.switch');

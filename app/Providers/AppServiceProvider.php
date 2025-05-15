@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\File;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        
     }
 
     /**
@@ -20,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (session()->has('locale')) {
+        app()->setLocale(session('locale'));
+    }
         Vite::prefetch(concurrency: 3);
         
     }

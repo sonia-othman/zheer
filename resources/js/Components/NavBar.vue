@@ -50,7 +50,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 // Import Heroicons
-import { BellIcon, UserIcon } from "@heroicons/vue/24/solid";
+import { BellIcon } from "@heroicons/vue/24/solid";
 
 const notifications = ref([])
 const showDropdown = ref(false)

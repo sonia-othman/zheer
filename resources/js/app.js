@@ -1,3 +1,4 @@
+
 import '../css/app.css';
 import './bootstrap';
 
@@ -7,6 +8,8 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { Chart } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import setupI18n from './i18n'
+
 
 Chart.register(zoomPlugin);
 
@@ -14,7 +17,11 @@ Chart.defaults.font.family = 'Inter, sans-serif';
 Chart.defaults.color = '#6b7280';
 Chart.defaults.borderColor = 'rgba(209, 213, 219, 0.5)';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'ژیر';
+const i18n = setupI18n();
+const app = createApp(App);
+app.use(i18n);
+app.mount('#app');
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -27,6 +34,7 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(i18n) 
             .mount(el);
     },
     progress: {
