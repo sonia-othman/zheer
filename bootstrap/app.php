@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \Illuminate\Http\Middleware\HandleCors::class,
-            \App\Http\Middleware\SetLocaleMiddleware::class,
+             \App\Http\Middleware\SetLocale::class,
         ]);
         
         // API middleware group if needed

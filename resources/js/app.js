@@ -24,20 +24,35 @@ app.use(i18n);
 app.mount('#app');
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue'),
-        ),
-    setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(ZiggyVue)
-            .use(i18n) 
-            .mount(el);
-    },
-    progress: {
-        color: '#4B5563',
-    },
+  resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+  setup({ el, App, props, plugin }) {
+    // Create i18n instance
+    const i18n = createI18n({
+      legacy: false,
+      globalInjection: true,
+      locale: props.initialPage.props.locale || 'en',
+      fallbackLocale: window.Laravel.fallbackLocale || 'en',
+      messages: {
+        [props.initialPage.props.locale]: props.initialPage.props.translations || {}
+      }
+    });
+
+    // Set RTL direction for Arabic and Kurdish
+    if (['ar', 'ku'].includes(props.initialPage.props.locale)) {
+      document.documentElement.dir = 'rtl';
+    } else {
+      document.documentElement.dir = 'ltr';
+    }
+    document.documentElement.lang = props.initialPage.props.locale;
+
+    const app = createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(i18n);
+
+    // Share the i18n instance with all components
+    app.config.globalProperties.$i18n = i18n;
+    app.config.globalProperties.$t = i18n.global.t;
+
+    app.mount(el);
+  },
 });

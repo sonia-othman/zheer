@@ -60,4 +60,10 @@ Route::get('/dashboard', function (Request $request) {
     ]);
 })->name('dashboard');
 
-Route::get('language/{locale}', [LanguageController::class, 'switchLang'])->name('language.switch');
+Route::get('language/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'ku', 'ar'])) {
+        session(['locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return redirect()->back();
+})->name('language.switch');

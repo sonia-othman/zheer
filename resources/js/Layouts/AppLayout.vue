@@ -1,4 +1,6 @@
+
 <template>
+  
   <div class="flex min-h-screen">
     <!-- Main Content + Navbar (left side) -->
     <div class="flex-1 flex flex-col">
