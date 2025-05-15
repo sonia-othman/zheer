@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\Session;
 
 class LanguageController extends Controller
 {
-   public function switchLang(Request $request, $locale)
-    {
-        if (in_array($locale, ['en', 'ku', 'ar'])) {
-            session(['locale' => $locale]);
-        }
-        return redirect()->back();
+  public function switchLang($locale)
+{
+    if (in_array($locale, ['en', 'ar', 'ku'])) {
+        session(['locale' => $locale]);
     }
+    return redirect()->back();
+}
+
 }

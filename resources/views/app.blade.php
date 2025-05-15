@@ -15,6 +15,13 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+        <script>
+    window.Laravel = {
+        locale: "{{ app()->getLocale() }}",
+        fallbackLocale: "{{ config('app.fallback_locale') }}"
+    }
+</script>
+
     </head>
     <body class="font-sans antialiased">
         @inertia
