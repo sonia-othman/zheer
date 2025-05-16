@@ -59,5 +59,3 @@ Route::get('/dashboard', function (Request $request) {
         'translations' => __('dashboard') // Gets all dashboard.* translations
     ]);
 })->name('dashboard');
-Route::get('/language/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])
-    ->name('language.switch');

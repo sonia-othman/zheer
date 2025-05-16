@@ -2,17 +2,17 @@
   <AppLayout>
     <Head :title="$t('home.title')" />
     
-    <div class="flex flex-wrap gap-5 justify-end p-4" :dir="$page.props.direction">
-    <Card
-  v-for="device in devices"
-  :key="device.device_id"
-  :icon="FireIcon"
-  :title="`${$t('home.device')} ${device.device_id}`"
-  :description="device.status ? $t('common.open') : $t('common.closed')"
-:value="`${$t('home.temperature_short')}: ${device.temperature}°C / ${$t('home.battery_short')}: ${device.battery}V`"
-  :device-id="device.device_id"
-  @click="goToDashboard(device.device_id)"
-/>
+    <div class="flex flex-wrap gap-5 justify-start p-4" :dir="$page.props.direction">
+      <Card
+        v-for="device in devices"
+        :key="device.device_id"
+        :icon="FireIcon"
+        :title="`${$t('home.device')} ${device.device_id}`"
+        :description="device.status ? $t('common.open') : $t('common.closed')"
+        :value="`${$t('home.temperature_short')}: ${device.temperature}°C / ${$t('home.battery_short')}: ${device.battery}V`"
+        :device-id="device.device_id"
+        @click="goToDashboard(device.device_id)"
+      />
 
       <div v-if="devices.length === 0" class="w-full text-center text-gray-500">
         {{ $t('home.no_devices') }}
