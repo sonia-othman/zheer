@@ -19,7 +19,7 @@
 import { defineProps } from "vue";
 
 defineProps({
-  icon: Object,
+  icon: [Object, Function],  // Accept both Object and Function
   title: String,
   description: String,
   value: [String, Number],

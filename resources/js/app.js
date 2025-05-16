@@ -39,16 +39,19 @@ createInertiaApp({
 
         // Create i18n instance
         const i18n = createI18n({
-            legacy: false,
-            globalInjection: true,
-            locale: locale,
-            fallbackLocale: 'en',
-            messages: {
-                en: { ...en, ...props.initialPage.props.translations },
-                ar: { ...ar, ...props.initialPage.props.translations },
-                ku: { ...ku, ...props.initialPage.props.translations }
-            }
-        });
+    legacy: false,
+    globalInjection: true,
+    locale: locale,
+    fallbackLocale: 'en',
+    missing: (locale, key) => {
+        console.warn(`Missing translation: ${key} in ${locale}`);
+    },
+    messages: {
+        en: en,
+        ar: ar,
+        ku: ku
+    }
+});
 
         return createApp({ render: () => h(App, props) })
             .use(plugin)

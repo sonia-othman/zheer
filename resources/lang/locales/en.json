@@ -23,6 +23,7 @@
     "battery_short": "B",
     "no_devices": "No devices connected"
     },
+    
     "notifications": {
         "title": "Alerts",
         "no_alerts": "No recent alerts"
