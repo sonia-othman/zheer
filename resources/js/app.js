@@ -29,8 +29,6 @@ createInertiaApp({
         const locale = props.initialPage.props.locale || 'en';
         const isRtl = ['ar', 'ku'].includes(locale);
         
-        document.documentElement.lang = locale;
-        document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
 
         // Dynamically import RTL CSS if needed
         if (isRtl) {
