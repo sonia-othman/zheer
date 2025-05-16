@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <button
-      @click="toggleDropdown"
+      @click.stop="toggleDropdown"
       class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800 focus:outline-none"
     >
       <span class="mr-1">{{ currentLanguageLabel }}</span>
@@ -19,7 +19,6 @@
         />
       </svg>
     </button>
-
     <transition
       enter-active-class="transition ease-out duration-100"
       enter-from-class="transform opacity-0 scale-95"
@@ -29,10 +28,11 @@
       leave-to-class="transform opacity-0 scale-95"
     >
       <div
-        v-show="isOpen"
+        v-if="isOpen"
         class="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-50"
         :class="isRtl ? 'right-0' : 'left-0'"
         ref="dropdown"
+        @click.stop
       >
         <div class="py-1" role="none">
           <a
@@ -41,7 +41,7 @@
             href="#"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             :class="{ 'font-bold bg-gray-50': currentLocale === language.code }"
-            @click.prevent="switchLanguage(language.code)"
+            @click.stop="switchLanguage(language.code)"
           >
             {{ language.name }}
           </a>
@@ -50,7 +50,6 @@
     </transition>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
@@ -58,7 +57,6 @@ import { usePage, router } from '@inertiajs/vue3';
 const isOpen = ref(false);
 const dropdown = ref(null);
 const page = usePage();
-
 const currentLocale = computed(() => page.props.locale || 'en');
 const isRtl = computed(() => ['ar', 'ku'].includes(currentLocale.value));
 
@@ -81,30 +79,35 @@ const closeDropdown = () => {
 };
 
 const handleClickOutside = (event) => {
-  if (dropdown.value && !dropdown.value.contains(event.target)) {
+  // Only close if we're open and the click is outside
+  if (isOpen.value && dropdown.value && !dropdown.value.contains(event.target)) {
     closeDropdown();
   }
 };
 
+// Use mousedown instead of click to prevent race conditions with the dropdown selection
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener('mousedown', handleClickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('mousedown', handleClickOutside);
 });
 
 const switchLanguage = (lang) => {
-  closeDropdown();
-  
-  router.get(route('language.switch', lang), {}, {
-    preserveScroll: true,
-    onSuccess: () => {
-      // Force reload if changing RTL/LTR direction
-      if (isRtl.value !== ['ar', 'ku'].includes(lang)) {
-        window.location.reload();
+  // Set a small delay before closing the dropdown and navigating
+  setTimeout(() => {
+    closeDropdown();
+    
+    router.get(route('language.switch', lang), {}, {
+      preserveScroll: true,
+      onSuccess: () => {
+        // Force reload if changing RTL/LTR direction
+        if (isRtl.value !== ['ar', 'ku'].includes(lang)) {
+          window.location.reload();
+        }
       }
-    }
-  });
+    });
+  }, 50);
 };
 </script>
