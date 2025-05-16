@@ -15,46 +15,38 @@ import ar from '../lang/locales/ar.json';
 import ku from '../lang/locales/ku.json';
 
 Chart.register(zoomPlugin);
-
 Chart.defaults.font.family = 'Inter, sans-serif';
 Chart.defaults.color = '#6b7280';
 Chart.defaults.borderColor = 'rgba(209, 213, 219, 0.5)';
 
+// Get saved or default locale
+const savedLocale = localStorage.getItem('locale') || 'en';
+const isRtl = ['ar', 'ku'].includes(savedLocale);
+
+// Set document direction
+document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+
+// Create i18n instance
+export const i18n = createI18n({
+  legacy: false,
+  globalInjection: true,
+  locale: savedLocale,
+  fallbackLocale: 'en',
+  messages: { en, ar, ku },
+  missing: (locale, key) => {
+    console.warn(`Missing translation: ${key} in ${locale}`);
+  }
+});
+
 const appName = import.meta.env.VITE_APP_NAME || 'ژیر';
 
 createInertiaApp({
-    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-    setup({ el, App, props, plugin }) {
-        // Set RTL direction and load CSS before creating app
-        const locale = props.initialPage.props.locale || 'en';
-        const isRtl = ['ar', 'ku'].includes(locale);
-        
-
-        // Dynamically import RTL CSS if needed
-        if (isRtl) {
-            import('../css/rtl.css');
-        }
-
-        // Create i18n instance
-        const i18n = createI18n({
-    legacy: false,
-    globalInjection: true,
-    locale: locale,
-    fallbackLocale: 'en',
-    missing: (locale, key) => {
-        console.warn(`Missing translation: ${key} in ${locale}`);
-    },
-    messages: {
-        en: en,
-        ar: ar,
-        ku: ku
-    }
-});
-
-        return createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(ZiggyVue)
-            .use(i18n)
-            .mount(el);
-    },
+  resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+  setup({ el, App, props, plugin }) {
+    return createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(ZiggyVue)
+      .use(i18n)
+      .mount(el);
+  }
 });

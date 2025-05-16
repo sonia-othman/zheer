@@ -3,6 +3,7 @@
     class="card" 
     @click="$emit('click')"
     :class="{ 'rtl-card': $page.props.isRtl }"
+    :style="{ marginLeft: 'auto' }" 
   >
     <!-- Icon -->
     <component v-if="icon" :is="icon" class="w-8 h-8 text-gray-700" />
@@ -34,6 +35,7 @@ defineProps({
 <style scoped>
 .card {
   @apply w-[283px] h-[102px] bg-white shadow-lg rounded-lg flex items-center p-4 gap-2 cursor-pointer transition hover:bg-gray-100;
+  margin-left: auto; /* This will push all cards to the right */
 }
 
 .rtl-card {
