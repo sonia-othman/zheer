@@ -4,28 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class LanguageController extends Controller
 {
-    public function switchLang($locale)
+    public function switch($lang)
     {
-        // Validate locale
-        if (!in_array($locale, config('app.available_locales', ['en', 'ar', 'ku']))) {
-            return redirect()->back()->with('error', __('Language not supported'));
+        if (!in_array($lang, ['en', 'ar', 'ku'])) {
+            abort(400, 'Unsupported language');
         }
-
-        // Set application locale
-        app()->setLocale($locale);
         
-        // Store in session
-        session()->put([
-            'locale' => $locale,
-            'direction' => in_array($locale, ['ar', 'ku']) ? 'rtl' : 'ltr'
+        app()->setLocale($lang);
+        session()->put('locale', $lang);
+        
+        return back()->with([
+            'isRtl' => in_array($lang, ['ar', 'ku','en']) // Only true for RTL languages
         ]);
-
-        // Return to previous page
-        return redirect()->back();
     }
 }

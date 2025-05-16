@@ -1,18 +1,13 @@
-/* Basic RTL overrides */
-[dir="rtl"] {
+/* Content-specific RTL styling */
+.content-rtl {
   direction: rtl;
-  text-align: right;
 }
 
-/* Tailwind-specific RTL fixes */
-[dir="rtl"] .ms-2 {
-  margin-inline-start: 0.5rem !important;
-  margin-left: unset !important;
+/* Card specific RTL adjustments */
+.content-rtl .card:not(.rtl-card) {
+  direction: ltr; /* Force LTR for cards unless they have rtl-card class */
 }
 
-[dir="rtl"] .me-2 {
-  margin-inline-end: 0.5rem !important;
-  margin-right: unset !important;
+.rtl-card {
+  direction: rtl;
 }
-
-/* Add more RTL overrides as needed */

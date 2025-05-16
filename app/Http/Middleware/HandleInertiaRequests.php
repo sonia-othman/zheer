@@ -31,7 +31,7 @@ class HandleInertiaRequests extends Middleware
 {
     return array_merge(parent::share($request), [
         'locale' => fn () => app()->getLocale(),
-        'direction' => fn () => in_array(app()->getLocale(), ['ar', 'ku']) ? 'rtl' : 'ltr',
+        'direction' => 'ltr' ,
         'translations' => fn () => [
             'common' => trans('common'),
             'dashboard' => trans('dashboard'), 
