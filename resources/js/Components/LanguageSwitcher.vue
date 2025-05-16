@@ -41,7 +41,7 @@
             href="#"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             :class="{ 'font-bold bg-gray-50': currentLocale === language.code }"
-            @click="switchLanguage(language.code)"
+            @click.prevent="switchLanguage(language.code)"
           >
             {{ language.name }}
           </a>
@@ -94,19 +94,17 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-const switchLanguage = async (lang) => {
+const switchLanguage = (lang) => {
   closeDropdown();
-  try {
-    await router.get(route('language.switch', lang), {}, {
-      preserveScroll: true,
-      onSuccess: () => {
-        if (isRtl.value !== ['ar', 'ku'].includes(lang)) {
-          window.location.reload();
-        }
+  
+  router.get(route('language.switch', lang), {}, {
+    preserveScroll: true,
+    onSuccess: () => {
+      // Force reload if changing RTL/LTR direction
+      if (isRtl.value !== ['ar', 'ku'].includes(lang)) {
+        window.location.reload();
       }
-    });
-  } catch (error) {
-    console.error('Language switch failed:', error);
-  }
+    }
+  });
 };
 </script>
