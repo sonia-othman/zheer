@@ -1,21 +1,15 @@
 <template>
-  <nav class="bg-white border-b px-6 py-4 flex justify-between items-center relative">
-    <!-- Left side: Empty or could contain logo/navigation -->
+  <nav class="h-16 px-6 flex items-center justify-end border-b bg-white" dir="ltr">
+    <!-- Right aligned content -->
     <div class="flex items-center gap-6">
-      <!-- Any other left-side content -->
-    </div>
-
-    <!-- Right side: Title and Notifications -->
-    <div class="flex items-center gap-6">
-      <!-- Dynamic Title -->
+      <!-- Title -->
       <div class="text-xl font-bold text-gray-800">
-        {{ currentPage }}
+        {{ $t(currentPageTitle) }}
       </div>
 
       <!-- Notifications -->
       <div class="relative">
-        <button @click="toggleDropdown" class="relative">
-          <!-- Bell Icon from Heroicons -->
+        <button @click="toggleDropdown" class="relative" ref="notificationBtn">
           <BellIcon class="w-6 h-6 text-gray-700" />
           <span v-if="notificationCount > 0"
                 class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5 py-0.5">
@@ -25,20 +19,22 @@
 
         <!-- 🧾 Notification dropdown -->
         <div v-if="showDropdown"
-             class="absolute right-0 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto">
+             class="absolute right-0 mt-2 w-72 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto" 
+             ref="dropdownMenu">
           <div v-if="notifications.length" class="divide-y divide-gray-100">
             <div v-for="(n, i) in notifications.slice(0, 5)" :key="i" class="p-3 text-sm">
               <div :class="notificationClass(n.type)">
-                {{ n.message }}
+                 {{ n.translation_key ? $t(n.translation_key, n.translation_params) : n.message }}
               </div>
+
               <div class="text-xs text-gray-400">{{ n.timestamp }}</div>
             </div>
             <div class="text-center py-2">
-              <a href="/notifications" @click="closeDropdown" class="text-blue-600 hover:underline text-sm">🔗 See all notifications</a>
+              <a href="/notifications" @click="closeDropdown" class="text-blue-600 hover:underline text-sm">🔗 {{ $t('common.see_all_notifications') }}</a>
             </div>
           </div>
           <div v-else class="text-center py-4 text-sm text-gray-500">
-            No notifications
+            {{ $t('common.no_notifications') }}
           </div>
         </div>
       </div>
@@ -47,55 +43,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { usePage, router } from '@inertiajs/vue3'
-// Import Heroicons
+import { ref, onMounted, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { BellIcon } from "@heroicons/vue/24/solid";
+import { useI18n } from 'vue-i18n';
 
-const notifications = ref([])
-const showDropdown = ref(false)
-const notificationCount = ref(0)
-const user = usePage().props.auth?.user || null
+const { t: $t } = useI18n();
+const notifications = ref([]);
+const showDropdown = ref(false);
+const notificationCount = ref(0);
+const notificationBtn = ref(null);
+const dropdownMenu = ref(null);
 
 function toggleDropdown() {
-  showDropdown.value = !showDropdown.value
+  showDropdown.value = !showDropdown.value;
 }
 
 function closeDropdown() {
-  showDropdown.value = false
+  showDropdown.value = false;
 }
 
 function notificationClass(type) {
-  return {
-    'text-green-600': type === 'success',
-    'text-yellow-600': type === 'warning',
-    'text-red-600': type === 'danger',
-    'text-blue-600': type === 'info',
-  }
+  // Add your notification type styling logic here
+  return 'font-medium';
 }
 
 onMounted(() => {
   window.Echo.channel('sensor-notifications')
     .listen('.SensorAlert', (e) => {
-      notifications.value.unshift(e.alert)
-      notificationCount.value++
-    })
+      notifications.value.unshift(e.alert);
+      notificationCount.value++;
+    });
 
+  // Improved click outside handler
   document.addEventListener('click', (e) => {
-    const dropdown = document.querySelector('.z-50')
-    const button = e.target.closest('button')
-
-    if (!dropdown?.contains(e.target) && !button) {
-      closeDropdown()
+    // Only process if dropdown is currently shown
+    if (showDropdown.value) {
+      // Check if click target is outside both the button and dropdown
+      const clickedButton = notificationBtn.value?.contains(e.target);
+      const clickedDropdown = dropdownMenu.value?.contains(e.target);
+      
+      if (!clickedButton && !clickedDropdown) {
+        closeDropdown();
+      }
     }
-  })
-})
+  });
+});
 
-// 🔠 Dynamic page title from current route
 const routeMap = {
-  '/dashboard': 'داشبۆرد',
-  '/notifications': 'ئاگاداریەکان'
-}
-const currentPage = computed(() => routeMap[window.location.pathname] || 'سەرەکی')
-
+  '/dashboard': 'common.dashboard',
+  '/notifications': 'common.notifications'
+};
+const currentPageTitle = computed(() => routeMap[window.location.pathname] || 'common.home');
 </script>

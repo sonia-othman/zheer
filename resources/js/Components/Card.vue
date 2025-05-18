@@ -1,44 +1,70 @@
 <template>
-  <div 
-    class="card" 
+  <div
+    class="card group"
     @click="$emit('click')"
-    :class="{ 'rtl-card': $page.props.isRtl }"
-    :style="{ marginLeft: 'auto' }" 
+    dir="ltr"
+    :style="{ marginLeft: 'auto' }"
   >
-    <!-- Icon -->
-    <component v-if="icon" :is="icon" class="w-8 h-8 text-gray-700" />
+    <!-- Layout container with appropriate icon positioning -->
+    <div class="flex items-center w-full gap-4">
+      <!-- Icon, positioned based on direction -->
+      <component 
+        v-if="icon && direction === 'ltr'" 
+        :is="icon" 
+        class="w-10 h-10 text-primary"
+      />
 
-    <!-- Text Section -->
-    <div class="flex-1" :class="$page.props.isRtl ? 'text-right' : 'text-left'">
-      <h2 class="text-lg font-bold text-text">{{ title }}</h2>
-      <p class="text-sm text-text">{{ description }}</p>
+      <!-- Text Section -->
+      <div class="flex flex-col justify-between flex-1">
+        <h2 class="text-lg font-semibold text-gray-800">
+          {{ title }}
+          <br />
+          <span class="text-base font-normal">{{ deviceId }}</span>
+        </h2>
+
+        <p class="text-sm text-gray-500">{{ description }}</p>
+
+        <div class="mt-2 flex flex-wrap gap-2">
+          <div class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full whitespace-nowrap">
+            {{ value.split('\n')[0] }}
+          </div>
+          <div class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full whitespace-nowrap">
+            {{ value.split('\n')[1] }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Icon when in RTL mode, positioned at the end -->
+      <component 
+        v-if="icon && direction === 'rtl'" 
+        :is="icon" 
+        class="w-10 h-10 text-primary"
+      />
     </div>
-
-    <!-- Value Section -->
-    <span class="text-xl font-bold text-text">{{ value }}</span>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, computed } from "vue";
 import { usePage } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
   icon: [Object, Function],
   title: String,
   description: String,
   value: [String, Number],
   deviceId: String,
 });
+
+// Get direction from the page props
+const page = usePage();
+const direction = computed(() => {
+  return page.props.direction || 'ltr';
+});
 </script>
 
 <style scoped>
 .card {
-  @apply w-[283px] h-[102px] bg-white shadow-lg rounded-lg flex items-center p-4 gap-2 cursor-pointer transition hover:bg-gray-100;
-  margin-left: auto; /* This will push all cards to the right */
-}
-
-.rtl-card {
-  @apply flex-row-reverse;
+  @apply w-[340px] h-[140px] bg-white shadow-md rounded-2xl p-5 cursor-pointer transition hover:shadow-xl hover:bg-gray-50;
 }
 </style>

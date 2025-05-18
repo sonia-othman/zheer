@@ -1,21 +1,18 @@
 <template>
-  <div class="flex min-h-screen">
-    <!-- Main Content + Navbar (left side) -->
-    <div class="flex-1 flex flex-col">
-      <!-- Navbar remains LTR -->
-      <NavBar class="w-[calc(100%-16rem)] fixed top-0 left-0 z-40 bg-white" />
+  <div class="flex min-h-screen relative">
+    <!-- Sidebar: fixed on the far right -->
+    <Sidebar class="fixed top-0 right-0 w-64 h-screen z-30" />
 
-      <!-- Main Content with conditional RTL -->
-      <div 
-        class="flex-1 p-6 bg-back mr-64"
-        :class="{ 'content-rtl': $page.props.isRtl }"
-      >
-        <slot />
-      </div>
+    <!-- Navbar: fixed next to sidebar (on the right) -->
+    <NavBar
+      class="fixed top-0 z-20 bg-white h-16"
+      style="right: 16rem; width: calc(100% - 16rem);"
+    />
+
+    <!-- Main content: has margin for sidebar + navbar height -->
+    <div class="flex-1 mt-16 mr-64 p-6 bg-back">
+      <slot />
     </div>
-
-    <!-- Sidebar remains LTR -->
-    <Sidebar />
   </div>
 </template>
 

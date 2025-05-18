@@ -4,15 +4,15 @@
     
     <div class="flex flex-wrap gap-5 justify-start p-4" :dir="$page.props.direction">
       <Card
-        v-for="device in devices"
-        :key="device.device_id"
-        :icon="FireIcon"
-        :title="`${$t('home.device')} ${device.device_id}`"
-        :description="device.status ? $t('common.open') : $t('common.closed')"
-        :value="`${$t('home.temperature_short')}: ${device.temperature}°C / ${$t('home.battery_short')}: ${device.battery}V`"
-        :device-id="device.device_id"
-        @click="goToDashboard(device.device_id)"
-      />
+      v-for="device in devices"
+      :key="device.device_id"
+      :icon="DoorOpen"
+      :title="$t('home.device')"         
+      :device-id="device.device_id"       
+      :description="device.status ? $t('common.open') : $t('common.closed')"
+      :value="`${$t('home.temperature_short')}: ${device.temperature}°C \n ${$t('home.battery_short')}: ${device.battery}V`"
+      @click="goToDashboard(device.device_id)"
+    />
 
       <div v-if="devices.length === 0" class="w-full text-center text-gray-500">
         {{ $t('home.no_devices') }}
@@ -28,7 +28,7 @@ import { Head } from '@inertiajs/vue3';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Card from "@/Components/Card.vue";
 import { router } from '@inertiajs/vue3';
-import { FireIcon } from "@heroicons/vue/24/outline";
+import { DoorOpen } from 'lucide-vue-next';
 
 // 👇 Use the translation function
 const { t: $t } = useI18n();

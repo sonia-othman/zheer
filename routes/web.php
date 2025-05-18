@@ -47,8 +47,11 @@ Route::get('/notifications', function () {
                 'device_id' => $n->device_id,
                 'type' => $n->type,
                 'message' => $n->message,
+                'translation_key' => $n->translation_key, // Add this
+                'translation_params' => $n->translation_params, // Add this
                 'timestamp' => $n->created_at
-            ])
+            ]),
+        'translations' => __('notifications') // Add all notification translations
     ]);
 })->name('notifications');
 

@@ -29,7 +29,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
 {
-    return array_merge(parent::share($request), [
+    return array_merge(parent::share($request), 
+    [
         'locale' => fn () => app()->getLocale(),
         'direction' => 'ltr' ,
         'translations' => fn () => [
@@ -39,9 +40,10 @@ class HandleInertiaRequests extends Middleware
             'notifications' => trans('notifications')
         ],
         'flash' => [
-            'success' => fn () => $request->session()->get('success'),
-            'error' => fn () => $request->session()->get('error')
-        ]
-    ]);
+                'message' => fn () => $request->session()->get('message'),
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+        ]);
 }
 }

@@ -3,6 +3,11 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { useI18n } from 'vue-i18n';
+
+// Initialize i18n
+const { t } = useI18n();
 
 const chartRef = ref(null);
 const countChartRef = ref(null);
@@ -10,14 +15,8 @@ const latestData = ref(null);
 
 const props = defineProps({
   initialDeviceId: String,
-  initialData: Object,
-  translations: Object
+  initialData: Object
 });
-
-// Helper to access translations
-const t = (key) => {
-  return props.translations[key] || key;
-};
 
 const deviceId = ref(props.initialDeviceId);
 const tempBatteryFilter = ref('daily');
@@ -25,14 +24,14 @@ const countFilter = ref('daily');
 
 // Filter options with translations
 const filterOptions = computed(() => ({
-  daily: t('Today'),
-  weekly: t('Weekly'),
-  monthly: t('Monthly')
+  daily: t('common.daily'),
+  weekly: t('common.weekly'),
+  monthly: t('common.monthly')
 }));
 
 const statusText = computed(() => ({
-  open: t('Open'),
-  closed: t('Closed')
+  open: t('common.open'),
+  closed: t('common.closed')
 }));
 
 let tempBatteryChart = null;
@@ -122,12 +121,10 @@ const groupDataByFilter = (data, filterType) => {
   });
 };
 
-
 const updateTempBatteryChart = (data, filterType) => {
   const labels = data.map(entry => entry.label || formatDateLabel(entry.created_at, filterType));
   const temperatureData = data.map(entry => entry.temperature);
   const batteryData = data.map(entry => entry.battery);
-
 
   const maxTemp = Math.max(...temperatureData);
   const minTemp = Math.min(...temperatureData);
@@ -138,11 +135,12 @@ const updateTempBatteryChart = (data, filterType) => {
   const minBattery = Math.min(...batteryData);
   const maxBatteryIndex = batteryData.indexOf(maxBattery);
   const minBatteryIndex = batteryData.indexOf(minBattery);
- const chartData = {
+  
+  const chartData = {
     labels,
     datasets: [
       {
-        label: `🌡 ${t('Temperature')} (°C)`,
+        label: `🌡 ${t('dashboard.Temperature')} (°C)`,
         data: temperatureData,
         borderColor: '#ef4444',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -154,7 +152,7 @@ const updateTempBatteryChart = (data, filterType) => {
           idx === maxTempIndex || idx === minTempIndex ? 6 : 3),
       },
       {
-        label: `🔋 ${t('Battery')} (V)`,
+        label: `🔋 ${t('dashboard.Battery')} (V)`,
         data: batteryData,
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -178,14 +176,18 @@ const updateTempBatteryChart = (data, filterType) => {
         plugins: {
           tooltip: {
             callbacks: {
-              title: context => `${t(filterType === 'weekly' ? 'Day' : filterType === 'monthly' ? 'Date' : 'Time')}: ${context[0].label}`,
+              title: context => filterType === 'weekly' ? 
+                `${t('dashboard.Day')}: ${context[0].label}` : 
+                filterType === 'monthly' ? 
+                `${t('dashboard.Date')}: ${context[0].label}` : 
+                `${t('dashboard.Time')}: ${context[0].label}`,
               afterBody: context => {
                 const index = context[0].dataIndex;
                 const tooltips = [];
-                if (index === maxTempIndex) tooltips.push(t('Highest Temperature'));
-                else if (index === minTempIndex) tooltips.push(t('Lowest Temperature'));
-                if (index === maxBatteryIndex) tooltips.push(t('Highest Battery'));
-                else if (index === minBatteryIndex) tooltips.push(t('Lowest Battery'));
+                if (index === maxTempIndex) tooltips.push(t('dashboard.Highest Temperature'));
+                else if (index === minTempIndex) tooltips.push(t('dashboard.Lowest Temperature'));
+                if (index === maxBatteryIndex) tooltips.push(t('dashboard.Highest Battery'));
+                else if (index === minBatteryIndex) tooltips.push(t('dashboard.Lowest Battery'));
                 return tooltips;
               }
             }
@@ -197,7 +199,7 @@ const updateTempBatteryChart = (data, filterType) => {
             position: 'left', 
             title: { 
               display: true, 
-              text: `${t('Temperature')} (°C)` 
+              text: `${t('dashboard.Temperature')} (°C)` 
             } 
           },
           y1: { 
@@ -206,7 +208,7 @@ const updateTempBatteryChart = (data, filterType) => {
             grid: { drawOnChartArea: false }, 
             title: { 
               display: true, 
-              text: `${t('Battery')} (V)` 
+              text: `${t('dashboard.Battery')} (V)` 
             } 
           },
         },
@@ -230,7 +232,7 @@ const updateCountChart = (data, filterType) => {
   const chartData = {
     labels,
     datasets: [{
-      label: '🚪 Open Count',
+      label: `🚪 ${t('dashboard.Open Count')}`,
       data: countData,
       backgroundColor: countData.map((_, idx) => 
         idx === maxCountIndex ? '#2A55A2' : 
@@ -242,7 +244,7 @@ const updateCountChart = (data, filterType) => {
     }]
   };
 
-    if (!countChart) {
+  if (!countChart) {
     countChart = new Chart(countChartRef.value, {
       type: 'bar',
       data: chartData,
@@ -251,12 +253,15 @@ const updateCountChart = (data, filterType) => {
         plugins: {
           tooltip: {
             callbacks: {
-              title: context => filterType === 'weekly' ? `${t('dashboard.day')}: ${context[0].label}` : 
-                    filterType === 'monthly' ? `${t('dashboard.date')}: ${context[0].label}` : `${t('dashboard.time')}: ${context[0].label}`,
+              title: context => filterType === 'weekly' ? 
+                `${t('dashboard.Day')}: ${context[0].label}` : 
+                filterType === 'monthly' ? 
+                `${t('dashboard.Date')}: ${context[0].label}` : 
+                `${t('dashboard.Time')}: ${context[0].label}`,
               afterBody: context => {
                 const index = context[0].dataIndex;
-                return index === maxCountIndex ? [t('dashboard.highest_activity')] : 
-                       index === minCountIndex ? [t('dashboard.lowest_activity')] : [];
+                return index === maxCountIndex ? [t('dashboard.Highest Activity')] : 
+                      index === minCountIndex ? [t('dashboard.Lowest Activity')] : [];
               }
             }
           }
@@ -266,7 +271,7 @@ const updateCountChart = (data, filterType) => {
             beginAtZero: true, 
             title: { 
               display: true, 
-              text: t('dashboard.count') 
+              text: t('dashboard.Open Count') 
             } 
           },
         },
@@ -277,7 +282,6 @@ const updateCountChart = (data, filterType) => {
     countChart.update();
   }
 };
-
 
 const fetchData = async (type) => {
   try {
@@ -356,24 +360,25 @@ onUnmounted(() => {
   window.Echo.leaveChannel('sensor-data');
 });
 </script>
+
 <template>
-  <Head :title="t('Dashboard')" />
+  <Head :title="t('dashboard.title')" />
   <AppLayout>
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ t('Dashboard') }}
+        {{ t('dashboard.title') }}
       </h2>
     </template>
 
-    <div class="py-6" :dir="t('direction') === 'rtl' ? 'rtl' : 'ltr'">
+    <div class="py-6" :dir="t('common.direction')">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Status Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Current Status -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Current Status') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Current Status') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">{{ t('Door & Window') }}</p>
+              <p class="text-sm text-gray-500">{{ t('dashboard.Door & Window') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.status ? statusText.open : statusText.closed }}
               </p>
@@ -382,9 +387,9 @@ onUnmounted(() => {
 
           <!-- Temperature -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Temperature') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Temperature') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">{{ t('Current') }}</p>
+              <p class="text-sm text-gray-500">{{ t('dashboard.Current') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.temperature ?? '--' }}°C
               </p>
@@ -393,9 +398,9 @@ onUnmounted(() => {
 
           <!-- Battery -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Battery') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Battery') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">{{ t('Voltage') }}</p>
+              <p class="text-sm text-gray-500">{{ t('dashboard.Voltage') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.battery ?? '--' }}V
               </p>
@@ -404,9 +409,9 @@ onUnmounted(() => {
 
           <!-- Open Count -->
           <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Open Count') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Open Count') }}</h3>
             <div class="mt-4">
-              <p class="text-sm text-gray-500">{{ t('Current') }}</p>
+              <p class="text-sm text-gray-500">{{ t('dashboard.Current') }}</p>
               <p class="text-2xl font-semibold">
                 {{ latestData?.count ?? '0' }}
               </p>
@@ -417,12 +422,12 @@ onUnmounted(() => {
         <!-- Temperature & Battery Chart -->
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Temperature & Battery') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Temperature & Battery') }}</h3>
             <select 
               v-model="tempBatteryFilter" 
               class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm"
             >
-              <option v-for="(value, key) in filterOptions" :value="key">
+              <option v-for="(value, key) in filterOptions" :key="key" :value="key">
                 {{ value }}
               </option>
             </select>
@@ -430,36 +435,36 @@ onUnmounted(() => {
           <canvas ref="chartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500">
             <span class="inline-block w-3 h-3 bg-black rounded-full mr-1"></span> 
-            {{ t('Highest and Lowest Points') }}
+            {{ t('dashboard.Highest and Lowest Points') }}
           </div>
         </div>
 
         <!-- Open Count Chart -->
         <div class="bg-white p-6 rounded-lg shadow mt-4">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ t('Open Count') }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('dashboard.Open Count') }}</h3>
             <select 
               v-model="countFilter" 
               class="border-gray-300 rounded-lg shadow-sm focus:ring-blue-800 focus:border-blue-800 text-sm"
             >
-              <option v-for="(value, key) in filterOptions" :value="key">
+              <option v-for="(value, key) in filterOptions" :key="key" :value="key">
                 {{ value }}
               </option>
             </select>
           </div>
           <div class="flex justify-between items-center mb-2">
-            <p class="text-sm text-gray-500">{{ t('Total Opens') }}: {{ latestData?.count ?? '0' }}</p>
-            <p class="text-sm text-gray-500">{{ t('Last Update') }}: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
+            <p class="text-sm text-gray-500">{{ t('dashboard.Total Opens') }}: {{ latestData?.count ?? '0' }}</p>
+            <p class="text-sm text-gray-500">{{ t('dashboard.Last Update') }}: {{ latestData?.created_at ? new Date(latestData.created_at).toLocaleTimeString() : '--' }}</p>
           </div>
           <canvas ref="countChartRef" height="120"></canvas>
           <div class="mt-2 text-sm text-gray-500 flex items-center">
             <span class="inline-flex items-center mr-3">
               <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> 
-              {{ t('Highest Activity') }}
+              {{ t('dashboard.Highest Activity') }}
             </span>
             <span class="inline-flex items-center">
               <span class="inline-block w-3 h-3 bg-blue-900 rounded-full mr-1"></span> 
-              {{ t('Lowest Activity') }}
+              {{ t('dashboard.Lowest Activity') }}
             </span>
           </div>
         </div>

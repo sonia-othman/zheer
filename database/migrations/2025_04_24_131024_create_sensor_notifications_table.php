@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('device_id');
             $table->string('type'); 
             $table->string('message');
+            $table->string('translation_key')->nullable();
+            $table->json('translation_params')->nullable();
             $table->timestamp('timestamp');
             $table->timestamps();
         });
@@ -28,5 +30,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('sensor_notifications');
+        
     }
 };

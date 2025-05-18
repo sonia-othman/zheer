@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed right-0 top-0 h-full w-64 bg-white p-5 border-l z-50 overflow-visible">
+   <div class="fixed right-0 top-0 h-full w-64 bg-white p-5 border-l z-50 overflow-visible">
     <!-- Logo -->
     <div class="flex items-center justify-center mb-10">
       <img :src="'/images/logo1.png'" alt="Logo" class="w-auto max-w-[100px] h-auto">
@@ -10,7 +10,7 @@
       <SidebarLink
         href="home"
         icon="HomeIcon"
-        :text="$t('common.dashboard')"
+        :text="t('common.dashboard')"
         match="Home"
       />
 
@@ -19,15 +19,17 @@
         v-if="route().has('notifications')"
         href="notifications"
         icon="BellIcon"
-        :text="$t('common.notifications')"
+        :text="t('common.notifications')"
         match="Notifications"
       />
 
       <!-- Language Switcher -->
-      <div class="flex items-center gap-2 px-4 py-2 relative">
-        <GlobeAltIcon class="w-6 h-6 text-primary-light" />
+      <SidebarLink
+        :icon="'GlobeAltIcon'"
+        match="language"
+      >
         <LanguageSwitcher />
-      </div>
+      </SidebarLink>
     </nav>
   </div>
 </template>
@@ -36,7 +38,7 @@
 import { useI18n } from 'vue-i18n';
 import SidebarLink from './SidebarLink.vue';
 import LanguageSwitcher from './LanguageSwitcher.vue';
-import { GlobeAltIcon } from '@heroicons/vue/24/outline';
 
-const { t } = useI18n();
+const { locale, t } = useI18n();
+const isRtl = ['ku', 'ar'].includes(locale.value);
 </script>

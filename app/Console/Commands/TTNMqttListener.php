@@ -6,9 +6,12 @@ use Illuminate\Console\Command;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
 use App\Models\SensorData;
+use App\Models\SensorNotification;
 use PhpMqtt\Client\Protocol\MqttVersion;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Events\SensorAlert;
+use App\Events\SensorDataUpdated;
 
 class TTNMqttListener extends Command
 {
@@ -99,23 +102,29 @@ class TTNMqttListener extends Command
                 $alertData = [
                     'device_id' => $deviceId,
                     'type' => 'danger',
-                    'message' => "زیاتر لە یەک خولەکە دەرگاکە کراوەیە ⚠️",
+                    'message' => "Door has been open for more than a minute ⚠️", // Fallback message
+                    'translation_key' => 'notifications.door_open_too_long',
+                    'translation_params' => ['minutes' => $minutesOpen],
                     'timestamp' => $now
                 ];
                 
                 // Save to database
-                \App\Models\SensorNotification::create([
+                SensorNotification::create([
                     'device_id' => $alertData['device_id'],
                     'type' => $alertData['type'],
                     'message' => $alertData['message'],
+                    'translation_key' => $alertData['translation_key'],
+                    'translation_params' => $alertData['translation_params'],
                     'timestamp' => $now
                 ]);
                 
                 // Broadcast event
-                event(new \App\Events\SensorAlert([
+                event(new SensorAlert([
                     'device_id' => $alertData['device_id'],
                     'type' => $alertData['type'],
                     'message' => $alertData['message'],
+                    'translation_key' => $alertData['translation_key'],
+                    'translation_params' => $alertData['translation_params'],
                     'timestamp' => $now->toDateTimeString()
                 ]));
                 
@@ -148,7 +157,7 @@ class TTNMqttListener extends Command
             ]);
     
             // Broadcast sensor data update
-            event(new \App\Events\SensorDataUpdated($sensorData));
+            event(new SensorDataUpdated($sensorData));
     
             // Prepare notifications
             $messages = [];
@@ -161,7 +170,12 @@ class TTNMqttListener extends Command
                 // If this is a new open event
                 if (!isset($this->openDoors[$deviceId])) {
                     $this->info("✏️ Recording new open event for door $deviceId");
-                    $messages[] = ['type' => 'info', 'message' => 'دەرگاکە کرایەوە 🚪'];
+                    $messages[] = [
+                        'type' => 'info', 
+                        'message' => 'Door opened 🚪',
+                        'translation_key' => 'notifications.door_opened',
+                        'translation_params' => [] // Explicitly set empty array
+                    ];
                     
                     // Record when door opened - ensure we store as Carbon instance
                     $this->openDoors[$deviceId] = Carbon::now();
@@ -176,7 +190,12 @@ class TTNMqttListener extends Command
                 // If we were tracking this door as open
                 if (isset($this->openDoors[$deviceId])) {
                     $this->info("✏️ Recording door close for $deviceId");
-                    $messages[] = ['type' => 'success', 'message' => 'دەرگاکە داخرا ✅'];
+                    $messages[] = [
+                        'type' => 'success', 
+                        'message' => 'Door closed ✅',
+                        'translation_key' => 'notifications.door_closed',
+                        'translation_params' => [] // Explicitly set empty array
+                    ];
                     
                     // Door is now closed, remove from tracking
                     unset($this->openDoors[$deviceId]);
@@ -187,36 +206,67 @@ class TTNMqttListener extends Command
             // Temperature checks
             if (!is_null($temperature)) {
                 if ($temperature > 35) {
-                    $messages[] = ['type' => 'danger', 'message' => " {$temperature}°C پلەی گەرما زۆر بەرزە 🔥"];
+                    $messages[] = [
+                        'type' => 'danger', 
+                        'message' => "Temperature is too high: {$temperature}°C 🔥", // Fallback message
+                        'translation_key' => 'notifications.temp_too_high',
+                        'translation_params' => ['temperature' => $temperature]
+                    ];
                 } elseif ($temperature < 5) {
-                    $messages[] = ['type' => 'danger', 'message' => "  {$temperature}°C پلەی گەرما زۆر نزمە ❄️"];
+                    $messages[] = [
+                        'type' => 'danger', 
+                        'message' => "Temperature is too low: {$temperature}°C ❄️", // Fallback message
+                        'translation_key' => 'notifications.temp_too_low',
+                        'translation_params' => ['temperature' => $temperature]
+                    ];
                 }
             }
     
             // Battery checks
             if (is_null($battery)) {
-                $messages[] = ['type' => 'danger', 'message' => "نەمانی پەیوەندی بە سێنسەرەکەوە ❌ "];
+                $messages[] = [
+                    'type' => 'danger', 
+                    'message' => "Lost connection to sensor ❌", // Fallback message
+                    'translation_key' => 'notifications.connection_lost'
+                ];
             } elseif ($battery < 2.5) {
-                $messages[] = ['type' => 'danger', 'message' => " {$battery}V ڕێژەی پاتریەکەو نزمە 🔋"];
+                $messages[] = [
+                    'type' => 'danger', 
+                    'message' => "Battery level critical: {$battery}V 🔋", // Fallback message
+                    'translation_key' => 'notifications.battery_critical',
+                    'translation_params' => ['battery' => $battery]
+                ];
             } elseif ($battery < 2.9) {
-                $messages[] = ['type' => 'warning', 'message' => "{$battery}V ڕێژەی پاتریەکەو زۆر نزمە ⚠️"];
+                $messages[] = [
+                    'type' => 'warning', 
+                    'message' => "Battery level low: {$battery}V ⚠️", // Fallback message
+                    'translation_key' => 'notifications.battery_low',
+                    'translation_params' => ['battery' => $battery]
+                ];
             }
     
             // Send all notifications
             foreach ($messages as $msg) {
+                // Ensure we have all required keys
+                $msg['translation_params'] = $msg['translation_params'] ?? [];
+                
                 // Save to database
-                \App\Models\SensorNotification::create([
+                SensorNotification::create([
                     'device_id' => $deviceId,
                     'type' => $msg['type'],
                     'message' => $msg['message'],
+                    'translation_key' => $msg['translation_key'] ?? null,
+                    'translation_params' => $msg['translation_params'],
                     'timestamp' => $now
                 ]);
     
                 // Broadcast event
-                event(new \App\Events\SensorAlert([
+                event(new SensorAlert([
                     'device_id' => $deviceId,
                     'type' => $msg['type'],
                     'message' => $msg['message'],
+                    'translation_key' => $msg['translation_key'] ?? null,
+                    'translation_params' => $msg['translation_params'],
                     'timestamp' => $now->toDateTimeString()
                 ]));
             }
@@ -225,7 +275,7 @@ class TTNMqttListener extends Command
     
         } catch (\Exception $e) {
             $this->error("❌ Failed to process payload: " . $e->getMessage());
-            \Log::error('Sensor payload error', ['error' => $e->getMessage()]);
+            Log::error('Sensor payload error', ['error' => $e->getMessage()]);
         }
     }
     
