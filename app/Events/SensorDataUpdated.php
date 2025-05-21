@@ -31,7 +31,7 @@ class SensorDataUpdated implements ShouldBroadcastNow
     public function broadcastWith()
     {
         return [
-            'sensorData' => $this->sensorData->toArray()
+            'sensorData' => $this->sensorData->toArray(),
         ];
     }
 }

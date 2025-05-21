@@ -28,22 +28,22 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-{
-    return array_merge(parent::share($request), 
-    [
-        'locale' => fn () => app()->getLocale(),
-        'direction' => 'ltr' ,
-        'translations' => fn () => [
-            'common' => trans('common'),
-            'dashboard' => trans('dashboard'), 
-            'home' => trans('home'),
-            'notifications' => trans('notifications')
-        ],
-        'flash' => [
-                'message' => fn () => $request->session()->get('message'),
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
-            ],
-        ]);
-}
+    {
+        return array_merge(parent::share($request),
+            [
+                'locale' => fn () => app()->getLocale(),
+                'direction' => 'ltr',
+                'translations' => fn () => [
+                    'common' => trans('common'),
+                    'dashboard' => trans('dashboard'),
+                    'home' => trans('home'),
+                    'notifications' => trans('notifications'),
+                ],
+                'flash' => [
+                    'message' => fn () => $request->session()->get('message'),
+                    'success' => fn () => $request->session()->get('success'),
+                    'error' => fn () => $request->session()->get('error'),
+                ],
+            ]);
+    }
 }

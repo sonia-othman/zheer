@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\SensorData;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -39,8 +40,8 @@ class DashboardController extends Controller
         return response()->json([
             'devices' => $devices->count(),
             'alerts' => SensorData::where('status', true)
-                                  ->where('created_at', '>', now()->subDay())
-                                  ->count(),
+                ->where('created_at', '>', now()->subDay())
+                ->count(),
             'devicesData' => $deviceData,
         ]);
     }
@@ -48,19 +49,19 @@ class DashboardController extends Controller
     public function getDashboardData(Request $request)
     {
         $deviceId = $request->query('device_id');
-        
+
         return [
             'tempBatteryData' => $this->getSensorData(new Request([
                 'device_id' => $deviceId,
-                'filter' => 'daily'
+                'filter' => 'daily',
             ])),
             'countData' => $this->getSensorData(new Request([
                 'device_id' => $deviceId,
-                'filter' => 'daily'
+                'filter' => 'daily',
             ])),
-            'latestData' => SensorData::when($deviceId, fn($q) => $q->where('device_id', $deviceId))
-                                    ->latest()
-                                    ->first()
+            'latestData' => SensorData::when($deviceId, fn ($q) => $q->where('device_id', $deviceId))
+                ->latest()
+                ->first(),
         ];
     }
 
@@ -69,9 +70,9 @@ class DashboardController extends Controller
         $deviceId = $request->query('device_id');
         $filter = $request->query('filter', 'daily');
         $fullMonth = $request->query('full_month', false);
-    
-        $query = SensorData::when($deviceId, fn($q) => $q->where('device_id', $deviceId));
-    
+
+        $query = SensorData::when($deviceId, fn ($q) => $q->where('device_id', $deviceId));
+
         switch ($filter) {
             case 'weekly':
                 $query->where('created_at', '>=', now()->startOfWeek());
@@ -79,7 +80,7 @@ class DashboardController extends Controller
             case 'monthly':
                 if ($fullMonth) {
                     $query->whereMonth('created_at', now()->month)
-                          ->whereYear('created_at', now()->year);
+                        ->whereYear('created_at', now()->year);
                 } else {
                     $query->where('created_at', '>=', now()->startOfMonth());
                 }
@@ -87,15 +88,15 @@ class DashboardController extends Controller
             default:
                 $query->where('created_at', '>=', now()->startOfDay());
         }
-    
+
         if ($filter === 'weekly') {
             $data = $query->orderBy('created_at')->get();
-            
+
             // Group by day of week (0=Sunday to 6=Saturday)
             $grouped = $data->groupBy(function ($item) {
                 return Carbon::parse($item->created_at)->dayOfWeek;
             });
-    
+
             // Create complete week structure
             $weekDays = collect();
             for ($i = 0; $i < 7; $i++) {
@@ -106,26 +107,26 @@ class DashboardController extends Controller
                     'battery' => $dayData->avg('battery') ?? 0,
                     'count' => $dayData->count(), // ← fixed line
                     'created_at' => $dayData->last()->created_at ?? now()->startOfWeek()->addDays($i),
-                    'date_label' => Carbon::now()->startOfWeek()->addDays($i)->format('D')
+                    'date_label' => Carbon::now()->startOfWeek()->addDays($i)->format('D'),
                 ]);
-                
+
             }
-    
+
             return $weekDays;
         }
-    
+
         if ($filter === 'monthly') {
             $data = $query->orderBy('created_at')->get();
-        
+
             // Group by day of month (1 - 31)
             $grouped = $data->groupBy(function ($item) {
                 return Carbon::parse($item->created_at)->day;
             });
-        
+
             if ($fullMonth) {
                 $result = collect();
                 $daysInMonth = now()->daysInMonth;
-        
+
                 for ($day = 1; $day <= $daysInMonth; $day++) {
                     $dayData = $grouped->get($day, collect());
                     $result->push([
@@ -134,13 +135,13 @@ class DashboardController extends Controller
                         'battery' => $dayData->avg('battery') ?? 0,
                         'count' => $dayData->count(), // ✅ fixed: count how many times triggered
                         'created_at' => $dayData->last()->created_at ?? now()->setDay($day),
-                        'date_label' => $day
+                        'date_label' => $day,
                     ]);
                 }
-        
+
                 return $result;
             }
-        
+
             return $grouped->map(function ($dayData, $day) use ($deviceId) {
                 return [
                     'device_id' => $deviceId,
@@ -148,14 +149,14 @@ class DashboardController extends Controller
                     'battery' => $dayData->avg('battery') ?? 0,
                     'count' => $dayData->count(), // ✅ fixed here as well
                     'created_at' => $dayData->last()->created_at,
-                    'date_label' => $day
+                    'date_label' => $day,
                 ];
             })->values();
         }
-        
+
         // For daily view
         return $query->orderBy('created_at')->get([
-            'device_id', 'temperature', 'battery', 'count', 'created_at'
+            'device_id', 'temperature', 'battery', 'count', 'created_at',
         ]);
     }
 }

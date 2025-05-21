@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \Illuminate\Http\Middleware\HandleCors::class,
-             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\SetLocale::class,
         ]);
-        
+
         // API middleware group if needed
         // $middleware->api(append: [
         //     // Add API specific middleware here

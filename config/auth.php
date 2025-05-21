@@ -91,13 +91,13 @@ return [
     */
 
     'passwords' => [
-    'users' => [
-        'provider' => 'users',       // Uses the 'users' provider from auth.php
-        'table' => 'password_reset_tokens', // Database table for tokens
-        'expire' => 60,             // Token expiration in minutes (1 hour)
-        'throttle' => 60,            // Minimum seconds between requests
+        'users' => [
+            'provider' => 'users',       // Uses the 'users' provider from auth.php
+            'table' => 'password_reset_tokens', // Database table for tokens
+            'expire' => 60,             // Token expiration in minutes (1 hour)
+            'throttle' => 60,            // Minimum seconds between requests
+        ],
     ],
-],
 
     /*
     |--------------------------------------------------------------------------
