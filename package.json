@@ -2,7 +2,8 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "clear": "php artisan clear && php artisan clear-compiled && php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan optimize && composer dump-autoload -o"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",

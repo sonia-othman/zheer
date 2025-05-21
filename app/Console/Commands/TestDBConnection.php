@@ -24,14 +24,15 @@ class TestDBConnection extends Command
      * Execute the console command.
      */
     public function handle()
-{
-    try {
-        $pdo = DB::connection()->getPdo();
-        $this->info("Successfully connected to: " . DB::connection()->getDatabaseName());
-        $this->info("Database version: " . $pdo->query('SELECT version()')->fetchColumn());
-    } catch (\Exception $e) {
-        $this->error("Connection failed: " . $e->getMessage());
+    {
+        try {
+            $pdo = DB::connection()->getPdo();
+            $this->info('Successfully connected to: '.DB::connection()->getDatabaseName());
+            $this->info('Database version: '.$pdo->query('SELECT version()')->fetchColumn());
+        } catch (\Exception $e) {
+            $this->error('Connection failed: '.$e->getMessage());
+        }
+
+        return 0;
     }
-    return 0;
-}
 }

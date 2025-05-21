@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class TranslationServiceProvider extends ServiceProvider
 {
@@ -26,16 +26,16 @@ class TranslationServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $locale = App::getLocale();
             $translations = [];
-                
+
             // Load translations from different files
             $translationFiles = ['common', 'dashboard', 'home', 'notifications'];
-            
+
             foreach ($translationFiles as $file) {
                 if (File::exists(resource_path("lang/{$locale}/{$file}.php"))) {
                     $translations[$file] = include resource_path("lang/{$locale}/{$file}.php");
                 }
             }
-            
+
             $view->with('translations', $translations);
         });
     }

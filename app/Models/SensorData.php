@@ -12,12 +12,12 @@ class SensorData extends Model
         'temperature',
         'count',
         'battery',
-        'status'
+        'status',
     ];
-    
+
     protected $casts = [
         'raw_payload' => 'array',
         'count' => 'integer',
-        'status' => 'boolean'
+        'status' => 'boolean',
     ];
 }

@@ -81,23 +81,23 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-'pgsql' => [
-    'driver' => 'pgsql',
-    'url' => env('DATABASE_URL'),
-    'host' => env('DB_HOST', 'aws-0-us-west-1.pooler.supabase.com'),
-    'port' => env('DB_PORT', '5432'),
-    'database' => env('DB_DATABASE', 'postgres'),
-    'username' => env('DB_USERNAME', 'postgres.hdupwxxqcwlhxdnesmzy'),
-    'password' => env('DB_PASSWORD', ''),
-    'charset' => 'utf8',
-    'prefix' => '',
-    'prefix_indexes' => true,
-    'search_path' => 'public',
-    'sslmode' => 'require',  // Enforces SSL
-    'options' => [
-        PDO::ATTR_PERSISTENT => false,  // Important for pooler
-    ],
-],
+        'pgsql' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST', 'aws-0-us-west-1.pooler.supabase.com'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'postgres'),
+            'username' => env('DB_USERNAME', 'postgres.hdupwxxqcwlhxdnesmzy'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'require',  // Enforces SSL
+            'options' => [
+                PDO::ATTR_PERSISTENT => false,  // Important for pooler
+            ],
+        ],
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
