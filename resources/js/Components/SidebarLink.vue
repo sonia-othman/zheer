@@ -1,17 +1,22 @@
 <template>
-  <Link 
-    :href="href ? route(href) : '#'" 
-    class="flex items-center gap-2 px-4 py-2 rounded w-full transition"
-    :class="[
-      rtl ? 'flex-row-reverse' : 'flex-row',
-      isActive ? 'bg-primary text-white font-bold' : 'text-primary-light hover:bg-gray-100'
-    ]"
-  >
-    <component :is="iconComponent" class="w-6 h-6" />
-    <span>
-      <slot>{{ text }}</slot>
-    </span>
-  </Link>
+    <component
+        :is="href ? Link : 'div'"
+        :href="href ? route(href) : undefined"
+        class="flex items-center w-full gap-2 px-4 py-2 transition rounded cursor-pointer"
+        :class="[
+            rtl ? 'flex-row-reverse' : 'flex-row',
+            isActive ? 'bg-primary text-white font-bold' : 'text-primary-light hover:bg-gray-100'
+        ]"
+    >
+        <component
+            v-if="iconComponent"
+            :is="iconComponent"
+            class="w-6 h-6"
+        />
+        <span>
+            <slot>{{ text }}</slot>
+        </span>
+    </component>
 </template>
 
 <script setup>
@@ -24,19 +29,21 @@ import { useI18n } from 'vue-i18n';
 const { locale } = useI18n();
 
 const props = defineProps({
-  href: String,
-  icon: String,
-  text: String,
-  match: String,
-  rtl: Boolean
+    href: String,
+    icon: String,
+    text: String,
+    match: String,
+    rtl: Boolean
 });
 
 const iconComponent = computed(() => ({
-  HomeIcon,
-  BellIcon,
-  GlobeAltIcon
+    HomeIcon,
+    BellIcon,
+    GlobeAltIcon
 }[props.icon]));
 
 const page = usePage();
-const isActive = computed(() => page.component === props.match);
+const isActive = computed(() =>
+    props.match ? page.component.includes(props.match) : false
+);
 </script>

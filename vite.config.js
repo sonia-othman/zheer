@@ -30,7 +30,7 @@ export default defineConfig({
     },
     build: {
         assetsDir: 'assets',  // Organized output directory
-        manifest: true,
+        manifest: 'manifest.json',
         rollupOptions: {
             output: {
                 assetFileNames: (assetInfo) => {

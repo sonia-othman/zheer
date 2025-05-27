@@ -7,37 +7,37 @@
             class="flex flex-wrap justify-start gap-5 p-4"
             :dir="$page.props.direction"
         >
-            <Card
-                v-for="device in devices"
-                :key="device.device_id"
-                :icon="DoorOpen"
-                :title="$t('home.device')"
-                :device-id="device.device_id"
-                :description="device.status ? $t('common.open') : $t('common.closed')"
-                :value="`${$t('home.temperature_short')}: ${device.temperature}°C \n ${$t('home.battery_short')}: ${device.battery}V`"
-                @click="goToDashboard(device.device_id)"
-            />
+            <template v-if="devices.length > 0">
+                <Card
+                    v-for="device in devices"
+                    :key="device.device_id"
+                    :icon="DoorOpen"
+                    :title="$t('home.device')"
+                    :device-id="device.device_id"
+                    :description="device.status ? $t('common.open') : $t('common.closed')"
+                    :value="`${$t('home.temperature_short')}: ${device.temperature}°C \n ${$t('home.battery_short')}: ${device.battery}V`"
+                    @click="goToDashboard(device.device_id)"
+                />
+            </template>
 
-            <div
-                v-if="devices.length === 0"
-                class="w-full text-center text-gray-500"
-            >
-                {{ $t('home.no_devices') }}
-            </div>
+            <template v-else>
+                <div class="w-full text-center text-gray-500">
+                    {{ $t('home.no_devices') }}
+                </div>
+            </template>
         </div>
     </AppLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n'; // 👈 Import this
+import { useI18n } from 'vue-i18n';
 import { Head } from '@inertiajs/vue3';
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Card from "@/Components/Card.vue";
 import { router } from '@inertiajs/vue3';
 import { DoorOpen } from 'lucide-vue-next';
 
-// 👇 Use the translation function
 const { t: $t } = useI18n();
 
 const props = defineProps({
@@ -83,5 +83,4 @@ onMounted(() => {
 onUnmounted(() => {
     window.Echo.leaveChannel('sensor-data');
 });
-// console.log($t('home.temperature_short')); // Should output "T", "د", or "پ" depending on language
 </script>

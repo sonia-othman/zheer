@@ -15,7 +15,7 @@
         "monthly": "Monthly",
         "see_all_notifications": "See all notifications",
         "no_notifications": "No notifications"
-},
+    },
     "dashboard": {
         "title": "Sensor Dashboard",
         "Device ID": "Device ID",
@@ -59,25 +59,24 @@
         "Last Update": "Last Update"
     },
     "home": {
-    "title": "Device Overview",
-    "device": "Device",
-    "temperature_short": "T",
-    "battery_short": "V",
-    "no_devices": "No devices connected"
+        "title": "Device Overview",
+        "device": "Device",
+        "temperature_short": "T",
+        "battery_short": "V",
+        "no_devices": "No devices connected"
     },
-    
-   "notifications": {
-    "recent": "Recent Notifications",
-    "device": "Device",
-    "unknown": "Unknown",
-    "door_opened": "Door opened 🚪",
-    "door_closed": "Door closed ✅",
-    "temp_too_high": "Temperature is too high: {temperature}°C 🔥",
-    "temp_too_low": "Temperature is too low: {temperature}°C ❄️",
-    "connection_lost": "Lost connection to sensor ❌",
-    "battery_critical": "Battery level critical: {battery}V 🔋",
-    "battery_low": "Battery level low: {battery}V ⚠️",
-    "door_open_too_long": "Door has been open for more than {minutes} minute(s) ⚠️"
-    
-  }
+    "notifications": {
+        "recent": "Recent Notifications",
+        "device": "Device",
+        "unknown": "Unknown",
+        "no_notifications": "No notifications",
+        "door_opened": "Door opened 🚪",
+        "door_closed": "Door closed ✅",
+        "temp_too_high": "Temperature is too high: {temperature}°C 🔥",
+        "temp_too_low": "Temperature is too low: {temperature}°C ❄️",
+        "connection_lost": "Lost connection to sensor ❌",
+        "battery_critical": "Battery level critical: {battery}V 🔋",
+        "battery_low": "Battery level low: {battery}V ⚠️",
+        "door_open_too_long": "Door has been open for more than {minutes} minute(s) ⚠️"
+    }
 }
