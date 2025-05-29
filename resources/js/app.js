@@ -28,25 +28,30 @@ document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
 
 // Create i18n instance
 export const i18n = createI18n({
-  legacy: false,
-  globalInjection: true,
-  locale: savedLocale,
-  fallbackLocale: 'en',
-  messages: { en, ar, ku },
-  missing: (locale, key) => {
-    console.warn(`Missing translation: ${key} in ${locale}`);
-  }
+    legacy: false,
+    globalInjection: true,
+    locale: savedLocale,
+    fallbackLocale: 'en',
+    messages: { en, ar, ku },
+    missing: (locale, key) => {
+        console.warn(`Missing translation: ${key} in ${locale}`);
+    }
 });
 
 const appName = import.meta.env.VITE_APP_NAME || 'ژیر';
 
 createInertiaApp({
-  resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-  setup({ el, App, props, plugin }) {
-    return createApp({ render: () => h(App, props) })
-      .use(plugin)
-      .use(ZiggyVue)
-      .use(i18n)
-      .mount(el);
-  }
+    resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+    setup({ el, App, props, plugin }) {
+        // Check if element already has Vue instance
+        if (!el._vueApp) {
+            const app = createApp({ render: () => h(App, props) })
+                .use(plugin)
+                .use(ZiggyVue)
+                .use(i18n);
+
+            app.mount(el);
+            el._vueApp = app;
+        }
+    }
 });

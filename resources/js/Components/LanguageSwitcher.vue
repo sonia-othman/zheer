@@ -1,19 +1,12 @@
 <template>
-    <div
-        class="relative"
-        ref="dropdownContainer"
-    >
+    <div class="relative">
         <button
             @click.stop="toggleDropdown"
-            @keydown.esc="closeDropdown"
-            class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800 focus:outline-none"
-            aria-haspopup="true"
-            :aria-expanded="isOpen.toString()"
-            tabindex="0"
+            class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-800 focus:outline-none"
         >
             <span class="mr-4">{{ currentLanguageLabel }}</span>
             <svg
-                class="w-5 h-5 text-gray-400 transition-transform"
+                class="w-5 h-5 text-gray-400"
                 :class="{ 'rotate-180': isOpen }"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -36,21 +29,20 @@
         >
             <div
                 v-if="isOpen"
-                class="absolute z-50 w-48 mt-2 transform -translate-x-1/2 bg-white divide-y divide-gray-100 rounded-md shadow-lg left-1/2 top-full ring-1 ring-black ring-opacity-5"
-                role="menu"
+                class="z-50 w-48 bg-white divide-y divide-gray-100 rounded-md shadow-lg absulute right-4 top-20 ring-1 ring-black ring-opacity-5"
                 @click.stop
             >
                 <div class="py-1">
-                    <button
+                    <a
                         v-for="language in languages"
                         :key="language.code"
-                        class="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 focus:outline-none"
+                        href="#"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         :class="{ 'font-bold bg-gray-50': currentLocale === language.code }"
                         @click.prevent="switchLanguage(language.code)"
-                        role="menuitem"
                     >
                         {{ language.name }}
-                    </button>
+                    </a>
                 </div>
             </div>
         </transition>
@@ -58,52 +50,33 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed } from 'vue';
 import { i18n } from '../app.js';
 
 const isOpen = ref(false);
-const dropdownContainer = ref(null);
 
 const languages = [
     { code: 'en', name: 'English' },
     { code: 'ku', name: 'کوردی' },
-    { code: 'ar', name: 'العربية' },
+    { code: 'ar', name: 'العربية' }
 ];
 
 const currentLocale = computed(() => i18n.global.locale.value);
-const currentLanguageLabel = computed(() => {
-    return languages.find((lang) => lang.code === currentLocale.value)?.name || 'English';
-});
+const isRtl = computed(() => ['ar', 'ku'].includes(currentLocale.value));
+const currentLanguageLabel = computed(() =>
+    languages.find(lang => lang.code === currentLocale.value)?.name || 'English'
+);
 
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
 };
 
-const closeDropdown = () => {
-    isOpen.value = false;
-};
-
 const switchLanguage = (lang) => {
-    if (currentLocale.value === lang) return;
+    if (i18n.global.locale.value === lang) return;
 
     i18n.global.locale.value = lang;
     localStorage.setItem('locale', lang);
     document.documentElement.setAttribute('dir', ['ar', 'ku'].includes(lang) ? 'rtl' : 'ltr');
-    closeDropdown();
+    isOpen.value = false;
 };
-
-// Close dropdown when clicking outside
-const handleClickOutside = (event) => {
-    if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-        closeDropdown();
-    }
-};
-
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
 </script>

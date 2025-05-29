@@ -1,63 +1,43 @@
 <?php
+// web.php - Fixed routes to match frontend calls
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SensorDataController;
-use App\Models\SensorData;
-use Illuminate\Http\Request;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home', [
-        'initialStats' => [
-            'devices' => SensorData::distinct('device_id')->count('device_id'),
-            'alerts' => SensorData::where('status', true)
-                ->where('created_at', '>', now()->subDay())
-                ->count(),
-            'devicesData' => SensorData::latest()
-                ->get()
-                ->unique('device_id')
-                ->map(fn ($record) => [
-                    'device_id' => $record->device_id,
-                    'status' => $record->status,
-                    'temperature' => $record->temperature,
-                    'battery' => $record->battery,
-                    'count' => $record->count,
-                    'created_at' => $record->created_at,
-                ])
-                ->values(),
-        ],
-    ]);
-})->name('home');
+// FAST: Page renders immediately
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::prefix('data')->group(function () {
-    Route::get('/sensor', [DashboardController::class, 'getSensorData']);
-    Route::post('/sensor', [SensorDataController::class, 'store']);
-    Route::get('/statistics', [DashboardController::class, 'getStatistics']);
+// API endpoints for loading data after page render
+Route::prefix('api')->group(function () {
+    // Home page data
+    Route::get('/home/stats', [HomeController::class, 'getStats']);
+
+    // Notifications data
+    Route::get('/notifications/load-more', [NotificationController::class, 'loadMore']);
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markAsRead']);
+
+    // Dashboard data - FIXED: Match the frontend API calls
+    Route::get('/dashboard/sensor', [DashboardController::class, 'getSensorData']);
+    Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
+    Route::get('/dashboard/latest', [DashboardController::class, 'getLatestData']);
+
+    // Device API endpoints
+    Route::get('/devices', [DashboardController::class, 'getDevicesApi']);
+    Route::get('/devices/{deviceId}', [DashboardController::class, 'getDeviceDataApi']);
 });
 
-Route::get('/notifications', function () {
-    return Inertia::render('Notifications', [
-        'initialNotifications' => \App\Models\SensorNotification::latest()
-            ->take(100)
-            ->get()
-            ->map(fn ($n) => [
-                'id' => $n->id,
-                'device_id' => $n->device_id,
-                'type' => $n->type,
-                'message' => $n->message,
-                'translation_key' => $n->translation_key, // Add this
-                'translation_params' => $n->translation_params, // Add this
-                'timestamp' => $n->created_at,
-            ]),
-        'translations' => __('notifications'), // Add all notification translations
-    ]);
-})->name('notifications');
+// FIXED: Match frontend calls - Frontend calls /data/sensor and /data/latest
+Route::prefix('data')->group(function () {
+    // Sensor data submission endpoint
+    Route::post('/sensor', [SensorDataController::class, 'store']);
 
-Route::get('/dashboard', function (Request $request) {
-    return Inertia::render('Dashboard', [
-        'initialDeviceId' => $request->query('device_id'),
-        'initialData' => app(DashboardController::class)->getDashboardData($request),
-        'translations' => __('dashboard'), // Gets all dashboard.* translations
-    ]);
-})->name('dashboard');
+    // ADDED: Frontend data fetching endpoints to match Vue component calls
+    Route::get('/sensor', [DashboardController::class, 'getSensorData']);
+    Route::get('/latest', [DashboardController::class, 'getLatestData']);
+    Route::get('/statistics', [DashboardController::class, 'getStatistics']);
+});

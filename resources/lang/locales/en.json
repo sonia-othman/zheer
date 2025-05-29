@@ -14,7 +14,13 @@
         "weekly": "Weekly",
         "monthly": "Monthly",
         "see_all_notifications": "See all notifications",
-        "no_notifications": "No notifications"
+        "no_notifications": "No notifications",
+        "loading": "Loading...",
+        "just_now": "Just now",
+        "minutes_ago": "{minutes} minutes ago",
+        "hours_ago": "{hours} hours ago",
+        "not_available": "N/A",
+        "back_to_home": "Back to Home"
     },
     "dashboard": {
         "title": "Sensor Dashboard",
@@ -56,20 +62,36 @@
         "Temperature & Battery": "Temperature & Battery",
         "Highest and Lowest Points": "Highest and Lowest Points",
         "Total Opens": "Total Opens",
-        "Last Update": "Last Update"
+        "Last Update": "Last Update",
+        "Normal Activity": "Normal Activity",
+        "motion_sensor_not_registered": "Motion sensor is not registered yet!",
+        "flame_sensor_not_registered": "Flame sensor is not registered yet!",
+        "door_sensor_not_registered": "Door sensor is not registered yet!",
+        "door activity": "Door Activity"
     },
     "home": {
         "title": "Device Overview",
         "device": "Device",
         "temperature_short": "T",
         "battery_short": "V",
-        "no_devices": "No devices connected"
+        "no_devices": "No devices connected",
+        "motion_sensor": "Motion Sensor",
+        "flame_sensor": "Flame Sensor",
+        "sensor_not_registered": "Not registered",
+        "lab_door": "IoT Lab Door",
+        "lab_window": "IoT Lab Window",
+        "department": "Department Locker",
+        "first_device": "First Device",
+        "second_device": "Second Device",
+        "third_device": "Third Device"
+    },
+    "errors": {
+        "sensor_not_registered": "This sensor not registered!"
     },
     "notifications": {
         "recent": "Recent Notifications",
         "device": "Device",
         "unknown": "Unknown",
-        "no_notifications": "No notifications",
         "door_opened": "Door opened 🚪",
         "door_closed": "Door closed ✅",
         "temp_too_high": "Temperature is too high: {temperature}°C 🔥",
@@ -77,6 +99,13 @@
         "connection_lost": "Lost connection to sensor ❌",
         "battery_critical": "Battery level critical: {battery}V 🔋",
         "battery_low": "Battery level low: {battery}V ⚠️",
-        "door_open_too_long": "Door has been open for more than {minutes} minute(s) ⚠️"
+        "door_open_too_long": "Door has been open for more than {minutes} minute(s) ⚠️",
+        "all_types": "All Types",
+        "success": "Success",
+        "info": "Info",
+        "danger": "Danger",
+        "no_notifications": "No notifications available",
+        "load_more": "Load More",
+        "invalid_notification": "Invalid notification format"
     }
 }

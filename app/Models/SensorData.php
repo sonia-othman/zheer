@@ -19,5 +19,7 @@ class SensorData extends Model
         'raw_payload' => 'array',
         'count' => 'integer',
         'status' => 'boolean',
+        'temperature' => 'float',
+        'battery' => 'float',
     ];
 }
