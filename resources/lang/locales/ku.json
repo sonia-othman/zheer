@@ -14,7 +14,13 @@
         "weekly": "هەفتانە",
         "monthly": "مانگانە",
         "see_all_notifications": "بینینی هەموو ئاگاداریەکان",
-        "no_notifications": "هیچ ئاگاداریەک نیە"
+        "no_notifications": "هیچ ئاگاداریەک نیە",
+        "just_now": "ئێستا",
+        "minutes_ago": " {minutes} خولەکە پێش ئێستا",
+        "hours_ago": " {hours} کاتژمێر پێش ئێستا",
+        "loading": "چاوەڕوانی",
+        "not_available": "هیچ ئامێرێک بەردەست نییە",
+        "back_to_home": " گەڕانەوە بۆ پەڕەی سەرەکی"
     },
     "dashboard": {
         "title": "داشبۆرد",
@@ -53,14 +59,28 @@
         "Temperature & Battery": "پلەی گەرمی و پاتری",
         "Highest and Lowest Points": "بەرزترین و نزمترین خاڵ",
         "Total Opens": "ژمارەی کرانەوەکان",
-        "Last Update": "کۆتا نوێکردنەوە"
+        "Last Update": "کۆتا نوێکردنەوە",
+        "Normal Activity": "چالاکی ئاسای",
+        "door activity": "چالاکی ئامێر"
     },
     "home": {
         "title": "سەرەکی ",
         "device": "ئامێر",
         "temperature_short": "پلەی گەرمی",
         "battery_short": "پاتری",
-        "no_devices": "هیچ سێنسەرێک نیە"
+        "no_devices": "هیچ سێنسەرێک نیە",
+        "flame_sensor": "سێنسەری ئاگر",
+        "motion_sensor": "سێنسەری چالاکی",
+        "lab_door": " ژووری\u202C \u202BIoT",
+        "lab_window": "پەنجەرەی\u202C \u202BIoT ",
+        "department": " دۆڵابی بەش",
+        "first_device": "ئامێری یەکەم",
+        "second_device": "ئامێری دووەم",
+        "third_device": "ئامێری سێیەم",
+        "sensor_not_registered": "ئەم ئامێرە تۆمار نەکراوە"
+    },
+    "errors": {
+        "sensor_not_registered": "ئەم ئامێرە تۆمار نەکراوە"
     },
     "notifications": {
         "recent": "نوێترین ئاگاداریەکان",
@@ -74,6 +94,12 @@
         "connection_lost": "پەیوەندیو بە سێنسەرەکەوە نەما ❌",
         "battery_critical": "نزمترین ئاستی پاتری: {battery}V 🔋",
         "battery_low": "ئاستی پاتریەکە نزمە: {battery}V ⚠️",
-        "door_open_too_long": "دەرگا بۆ ماوەی زیاتر لە {minutes} خولەکە کراوەیە  ⚠️"
+        "door_open_too_long": "دەرگا بۆ ماوەی زیاتر لە {minutes} خولەکە کراوەیە  ⚠️",
+        "all_types": "هەموو جۆرەکان",
+        "success": "سەرکەوتوو",
+        "info": "زانیاری",
+        "danger": "مەترسیدار",
+        "load_more": "زیاتر  ببینە",
+        "invalid_notification": "ئاگاداریەکی نا دروست"
     }
 }
