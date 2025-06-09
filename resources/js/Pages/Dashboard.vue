@@ -247,14 +247,12 @@ const updateCountChart = (data, filterType) => {
         new Date(a.created_at) - new Date(b.created_at)
     );
 
-    const labels = sortedData.map(entry => entry.label || formatDateLabel(entry.created_at, filterType));
-    // Use daily_count if available, otherwise use count (for daily view)
-    const countData = sortedData.map(entry => entry.daily_count || entry.count || 0);
+    const labels = sortedData.map(entry => entry.date_label || formatDateLabel(entry.created_at, filterType));
+    const countData = sortedData.map(entry => entry.count || 0);
 
-    // Calculate total count for the current filter period
-    totalCountForPeriod.value = countData.reduce((sum, count) => sum + count, 0);
+    // For total count, use the LAST count value in the period (not sum)
+totalCountForPeriod.value = countData.length; // Just number of rows = events
 
-    // Rest of your chart configuration remains the same...
     const maxCount = Math.max(...countData);
     const minCount = Math.min(...countData);
     const maxCountIndex = countData.indexOf(maxCount);
@@ -325,7 +323,6 @@ const updateCountChart = (data, filterType) => {
                                     messages.push(`❄️ ${t('dashboard.Lowest Activity')}`);
                                 }
 
-
                                 return messages;
                             },
                             label: context => {
@@ -370,7 +367,6 @@ const updateCountChart = (data, filterType) => {
         countChart.update();
     }
 };
-
 const isLoading = ref({
     tempBattery: false,
     count: false,

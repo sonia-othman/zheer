@@ -66,4 +66,30 @@ class SensorDataController extends Controller
             'count' => $formattedData->count(),
         ]);
     }
+    public function getStats()
+{
+    $latestDeviceData = \App\Models\SensorData::select('sensor_data.*')
+        ->whereIn('sensor_data.id', function ($query) {
+            $query->selectRaw('MAX(id)')
+                  ->from('sensor_data as s2')
+                  ->groupBy('device_id');
+        })
+        ->get(['device_id', 'status', 'temperature', 'battery', 'count', 'created_at']);
+
+    return response()->json([
+        'devices' => $latestDeviceData->count(),
+        'alerts' => \App\Models\SensorData::where('status', true)
+            ->where('created_at', '>', now()->subDay())
+            ->count(),
+        'devicesData' => $latestDeviceData->map(fn($record) => [
+            'device_id' => $record->device_id,
+            'status' => $record->status,
+            'temperature' => $record->temperature,
+            'battery' => $record->battery,
+            'count' => $record->count,
+            'created_at' => $record->created_at,
+        ])
+    ]);
+}
+
 }

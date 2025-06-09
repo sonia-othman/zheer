@@ -74,138 +74,115 @@ class DashboardController extends Controller
         }
     }
 
-    public function getSensorData(Request $request)
-    {
-        try {
-            $deviceId = $request->query('device_id');
-            $filter = $request->query('filter', 'daily');
-            $fullMonth = $request->query('full_month', false);
+public function getSensorData(Request $request)
+{
+    try {
+        $deviceId = $request->query('device_id');
+        $filter = $request->query('filter', 'daily');
+        $fullMonth = $request->query('full_month', false);
 
-            // FIXED: Return empty array if no device ID provided
-            if (!$deviceId) {
-                return response()->json([]);
-            }
-
-            $query = SensorData::where('device_id', $deviceId);
-
-            // OPTIMIZED: Add limits to prevent loading too much data
-            switch ($filter) {
-                case 'weekly':
-                    $query->where('created_at', '>=', now()->startOfWeek())
-                        ->limit(1000); // Prevent excessive data loading
-                    break;
-                case 'monthly':
-                    if ($fullMonth) {
-                        $query->whereMonth('created_at', now()->month)
-                            ->whereYear('created_at', now()->year)
-                            ->limit(2000);
-                    } else {
-                        $query->where('created_at', '>=', now()->startOfMonth())
-                            ->limit(1000);
-                    }
-                    break;
-                default:
-                    $query->where('created_at', '>=', now()->startOfDay())
-                        ->limit(500); // Limit daily data
-            }
-
-            // In getSensorData method, modify the weekly and monthly cases:
-
-            if ($filter === 'weekly') {
-                $data = $query->orderBy('created_at')->get();
-
-                $grouped = $data->groupBy(function ($item) {
-                    return Carbon::parse($item->created_at)->dayOfWeek;
-                });
-
-                $weekDays = collect();
-                for ($i = 0; $i < 7; $i++) {
-                    $dayData = $grouped->get($i, collect());
-                    $weekDays->push([
-                        'device_id' => $deviceId,
-                        'temperature' => $dayData->avg('temperature') ?? 0,
-                        'battery' => $dayData->avg('battery') ?? 0,
-                        'count' => $dayData->count(), // CHANGE: Use count() instead of sum()
-                        'daily_count' => $dayData->count(), // ADD: Daily count
-                        'created_at' => $dayData->last()->created_at ?? now()->startOfWeek()->addDays($i),
-                        'date_label' => Carbon::now()->startOfWeek()->addDays($i)->format('D')
-                    ]);
-                }
-
-                return response()->json($weekDays);
-            }
-
-            if ($filter === 'monthly') {
-                $data = $query->orderBy('created_at')->get();
-
-                $grouped = $data->groupBy(function ($item) {
-                    return Carbon::parse($item->created_at)->day;
-                });
-
-                if ($fullMonth) {
-                    $result = collect();
-                    $daysInMonth = now()->daysInMonth;
-
-                    for ($day = 1; $day <= $daysInMonth; $day++) {
-                        $dayData = $grouped->get($day, collect());
-                        $result->push([
-                            'device_id' => $deviceId,
-                            'temperature' => $dayData->avg('temperature') ?? 0,
-                            'battery' => $dayData->avg('battery') ?? 0,
-                            'count' => $dayData->count(), // CHANGE: Use count() instead of sum()
-                            'daily_count' => $dayData->count(), // ADD: Daily count
-                            'created_at' => $dayData->last()->created_at ?? now()->setDay($day),
-                            'date_label' => $day
-                        ]);
-                    }
-
-                    return response()->json($result);
-                }
-
-                $monthlyData = $grouped->map(function ($dayData, $day) use ($deviceId) {
-                    return [
-                        'device_id' => $deviceId,
-                        'temperature' => $dayData->avg('temperature') ?? 0,
-                        'battery' => $dayData->avg('battery') ?? 0,
-                        'count' => $dayData->count(), // CHANGE: Use count() instead of sum()
-                        'daily_count' => $dayData->count(), // ADD: Daily count
-                        'created_at' => $dayData->last()->created_at,
-                        'date_label' => $day
-                    ];
-                })->values();
-
-                return response()->json($monthlyData);
-            }
-
-            // For daily view - OPTIMIZED: Select only needed columns
-            if ($filter === 'daily') {
-                $data = $query->orderBy('created_at')->get(['device_id', 'temperature', 'battery', 'count', 'created_at']);
-
-                $grouped = $data->groupBy(function ($item) {
-                    return Carbon::parse($item->created_at)->hour;
-                });
-
-                $hours = collect();
-                for ($i = 0; $i < 24; $i++) {
-                    $hourData = $grouped->get($i, collect());
-                    $hours->push([
-                        'device_id' => $deviceId,
-                        'temperature' => $hourData->avg('temperature') ?? 0,
-                        'battery' => $hourData->avg('battery') ?? 0,
-                        'count' => $hourData->count(), // Number of records in this hour
-                        'created_at' => $hourData->last()->created_at ?? now()->startOfDay()->addHours($i),
-                        'date_label' => sprintf('%02d:00', $i)
-                    ]);
-                }
-
-                return response()->json($hours);
-            }
-        } catch (\Exception $e) {
-            \Log::error('Dashboard sensor data error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to load sensor data'], 500);
+        if (!$deviceId) {
+            return response()->json([]);
         }
-    }
 
+        $query = SensorData::where('device_id', $deviceId);
+
+        switch ($filter) {
+            case 'weekly':
+                $startOfWeek = Carbon::now()->startOfWeek(Carbon::SUNDAY);
+                $endOfWeek = Carbon::now()->endOfWeek(Carbon::SATURDAY);
+                $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                break;
+
+            case 'monthly':
+                if ($fullMonth) {
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year)
+                          ->limit(2000);
+                } else {
+                    $query->where('created_at', '>=', now()->startOfMonth())->limit(1000);
+                }
+                break;
+
+            default:
+                $query->where('created_at', '>=', now()->startOfDay())->limit(500);
+        }
+
+        $data = $query->orderBy('created_at')
+                      ->get(['device_id', 'temperature', 'battery', 'count', 'created_at']);
+
+        if ($filter === 'weekly' || $filter === 'monthly') {
+            $timezone = config('app.timezone');
+
+            $grouped = $data->groupBy(function ($item) use ($timezone) {
+                return Carbon::parse($item->created_at)->setTimezone($timezone)->toDateString();
+            });
+
+            $data = $grouped->map(function ($items, $label) use ($filter, $timezone) {
+                $date = Carbon::parse($label)->setTimezone($timezone);
+                return [
+                    'device_id' => $items->first()->device_id,
+                    'temperature' => round($items->avg('temperature'), 2),
+                    'battery' => round($items->avg('battery'), 2),
+                    'count' => $items->count(), // ✅ Show number of events
+                    'created_at' => $items->first()->created_at,
+                    'date_label' => $filter === 'weekly'
+                        ? $date->format('D')
+                        : $date->day
+                ];
+            })->values();
+        }
+
+        $formattedData = $data->map(function ($item) use ($filter) {
+            return [
+                'device_id' => $item['device_id'],
+                'temperature' => $item['temperature'],
+                'battery' => $item['battery'],
+                'count' => $item['count'],
+                'created_at' => $item['created_at'],
+                'date_label' => $item['date_label'] ?? (
+                    $filter === 'weekly'
+                        ? Carbon::parse($item['created_at'])->format('D')
+                        : ($filter === 'monthly'
+                            ? Carbon::parse($item['created_at'])->day
+                            : Carbon::parse($item['created_at'])->format('H:i'))
+                ),
+            ];
+        });
+
+        return response()->json($formattedData);
+
+    } catch (\Exception $e) {
+        \Log::error('Dashboard sensor data error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to load sensor data'], 500);
+    }
+}
+
+public function getDailyTimeData(Request $request)
+{
+    try {
+        $deviceId = $request->query('device_id');
+        
+        if (!$deviceId) {
+            return response()->json([]);
+        }
+
+        $data = SensorData::where('device_id', $deviceId)
+            ->where('created_at', '>=', now()->startOfDay())
+            ->orderBy('created_at')
+            ->get(['created_at']);
+
+        return response()->json($data->map(function ($item) {
+            return [
+                'created_at' => $item->created_at,
+                'date_label' => $item->created_at->format('H:i')
+            ];
+        }));
+    } catch (\Exception $e) {
+        \Log::error('Daily time data error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to load time data'], 500);
+    }
+}
     // OPTIMIZED: Add a lightweight method for initial latest data only
     public function getLatestData(Request $request)
     {
