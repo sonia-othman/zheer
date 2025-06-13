@@ -1,16 +1,12 @@
 <template>
   <div class="flex min-h-screen relative">
-    <!-- Sidebar: fixed on the far right -->
-    <Sidebar class="fixed top-0 right-0 w-64 h-screen z-30" />
-
-    <!-- Navbar: fixed next to sidebar (on the right) -->
-    <NavBar
-      class="fixed top-0 z-20 bg-white h-16"
-      style="right: 16rem; width: calc(100% - 16rem);"
-    />
-
-    <!-- Main content: has margin for sidebar + navbar height -->
-    <div class="flex-1 mt-16 mr-64 p-6 bg-back">
+    <Sidebar />
+    
+    <!-- Navbar: responsive positioning -->
+    <NavBar class="fixed top-0 right-0 z-20 bg-white h-16 w-full md:w-[calc(100%-16rem)] md:right-64" />
+    
+    <!-- Main content: responsive margins -->
+    <div class="flex-1 mt-16 p-6 bg-back md:mr-64">
       <slot />
     </div>
   </div>

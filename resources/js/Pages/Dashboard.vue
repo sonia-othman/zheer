@@ -61,7 +61,6 @@ const formatDateLabel = (dateString, filterType) => {
 const updateTempBatteryChart = (data, filterType) => {
     // Handle empty data
     if (!data || data.length === 0) {
-        console.warn('No data available for temperature/battery chart');
         return;
     }
 
@@ -237,7 +236,6 @@ const groupDataByFilter = (data, filterType) => {
 const updateCountChart = (data, filterType) => {
     // Handle empty data
     if (!data || data.length === 0) {
-        console.warn('No data available for count chart');
         totalCountForPeriod.value = 0;
         return;
     }
@@ -404,7 +402,6 @@ const fetchData = async (type) => {
             updateCountChart(data, filterValue);
         }
     } catch (error) {
-        console.error(`Error fetching ${type} data:`, error);
         errors.value[loadingKey] = error.response?.data?.message || 'Failed to load data';
     } finally {
         isLoading.value[loadingKey] = false;
@@ -422,10 +419,8 @@ const fetchLatestData = async () => {
             params: { device_id: deviceId.value }
         });
 
-        console.log('Latest data response:', response.data); // ADDED: Debug logging
         latestData.value = response.data;
     } catch (error) {
-        console.error('Error fetching latest data:', error);
         errors.value.latest = error.response?.data?.message || 'Failed to load latest data';
     } finally {
         isLoading.value.latest = false;
